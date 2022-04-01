@@ -1,0 +1,17 @@
+{
+  "pinballX": {
+    "configIniFile": "C:\\git\\private\\PinballPlayerSelct\\PinballX.ini",
+    "media": {
+      "path": "\\\\DESKTOP-8P8OQ8B\\pinball\\PinballX\\Media\\Pinball FX3"
+    }
+  },
+  "BackGlass": {
+    "Display": false
+  },
+  "DMD": {
+    "Display": true
+  },
+  "PlayField": {
+    "Display": true
+  }
+}
