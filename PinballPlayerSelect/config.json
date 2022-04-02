@@ -1,17 +1,51 @@
 {
   "pinballX": {
     "configIniFile": "C:\\git\\private\\PinballPlayerSelct\\PinballX.ini",
-    "media": {
-      "path": "\\\\DESKTOP-8P8OQ8B\\pinball\\PinballX\\Media\\Pinball FX3"
+    "mediapath": "\\\\DESKTOP-8P8OQ8B\\pinball\\PinballX\\Media\\Pinball FX3"
+  },
+  "displays": [
+    {
+      "file": "WMS_Indiana_Jones",
+      "backGlass": {
+        "enabled": false,
+        "background": true
+      },
+      "DMD": {
+        "enabled": false,
+        "background": true
+      },
+      "table": {
+        "background": true,
+        "prefix": "simpsons",
+        "width": 70,
+        "height": 30,
+        "showImage": true
+      }
+    },
+    {
+      "backGlass": {
+        "enabled": false,
+        "background": true,
+        "prefix": "indy"
+      },
+      "DMD": {
+        "enabled": false,
+        "background": true
+      },
+      "table": {
+        "background": true
+      }
     }
+  ],
+  "launch": {
+    "workingPath": "\\\\DESKTOP-8P8OQ8B\\pinball\\steam\\steamapps\\common\\Pinball FX3",
+    "executable": "Pinball FX3.exe",
+    "parameters": "-applaunch 442120 \"-table[TABLEFILE]\" -offline"
   },
-  "BackGlass": {
-    "Display": false
-  },
-  "DMD": {
-    "Display": true
-  },
-  "PlayField": {
-    "Display": true
+  "Selection": {
+    "ReturnToPinballX": 81, // q
+    "StartGame": 13, // Enter
+    "MorePlayers": 161, // Right Shift
+    "LessPlayers": 160, // Left Shift
   }
 }
