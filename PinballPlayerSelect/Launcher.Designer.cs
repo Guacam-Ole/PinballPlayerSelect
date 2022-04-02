@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Launcher));
             this.SuspendLayout();
             // 
             // Launcher
@@ -37,6 +38,7 @@
             this.BackColor = System.Drawing.Color.Red;
             this.ClientSize = new System.Drawing.Size(100, 100);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Launcher";
             this.Opacity = 0D;
             this.ShowInTaskbar = false;
