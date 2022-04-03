@@ -1,8 +1,7 @@
 {
   "profiles": {
     "PinballPlayerSelect": {
-      "commandName": "Project",
-      "commandLineArgs": "WMS_Indiana_Jones"
+      "commandName": "Project"
     }
   }
 }

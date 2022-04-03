@@ -1,13 +1,11 @@
 ﻿using NLog;
 
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace PinballPlayerSelect
@@ -27,57 +25,83 @@ namespace PinballPlayerSelect
         public Backgrounds()
         {
             _logger = LogManager.GetCurrentClassLogger();
-            _config = new Config().Configuration;
+            _config = Config.Configuration;
         }
 
-
-        private void RotateImage(ref Image image, int degrees)
+        private static void RotateImage(ref Image image, int degrees)
         {
             switch (degrees)
             {
                 case 90:
                     image.RotateFlip(RotateFlipType.Rotate90FlipNone);
                     break;
+
                 case 180:
                     image.RotateFlip(RotateFlipType.Rotate180FlipNone);
                     break;
+
                 case 270:
                     image.RotateFlip(RotateFlipType.Rotate270FlipNone);
                     break;
             }
         }
 
+        //public static void SetResolution(Form form, Screen pbxDisplaySettings)
+        //{
+        //    form.Width = pbxDisplaySettings.Width;
+        //    form.Height = pbxDisplaySettings.Height; ;
+        //    form.Left = 0;
+        //    form.Top = 0;
+        //}
 
-        public void PaintBackgroundImage(Form form, PinballXDisplay pbxDisplaySettings, string tablename)
+        public static void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
         {
-         //   var background = form.BackgroundImage;
-            //var background = form.Controls.OfType<PictureBox>().FirstOrDefault(q => q.Tag.Equals("Background"));
-            //if (background == null) throw new Exception("PictureBox not found");
-
-            form.Location = Screen.AllScreens[pbxDisplaySettings.Monitor].WorkingArea.Location;
-            form.Left = pbxDisplaySettings.X;
-            form.Top = pbxDisplaySettings.Y;
-            form.Width = pbxDisplaySettings.Width;
-            form.Height = pbxDisplaySettings.Height;
-
-            if (!string.IsNullOrEmpty(pbxDisplaySettings.ImagePath))
+            if (System.Windows.Forms.Screen.AllScreens.Length < screen.Id + 1)
             {
-                var matches = Directory.GetFiles(pbxDisplaySettings.ImagePath, $"{tablename}.*");
+                OutputHelper.ShowMessage($"Screen {screen.Id} does not exist");
+                return;
+            }
+
+//            form.WindowState = FormWindowState.Normal;
+            var winScreen = System.Windows.Forms.Screen.AllScreens[screen.Id];
+
+            form.Left = screen.X + winScreen.WorkingArea.Location.X;
+            form.Top = screen.Y + winScreen.WorkingArea.Location.Y;
+            if (screen.Width > 0 && screen.Height > 0)
+            {
+                form.Width = screen.Width;
+                form.Height = screen.Height;
+            }
+            else
+            {
+                form.Width = winScreen.WorkingArea.Width;
+                form.Height = winScreen.WorkingArea.Height;
+            }
+
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                var matches = Directory.GetFiles(imagePath, $"{tablename}.*");
+                string imageFileName;
                 if (matches.Any())
                 {
-                    string imageFileName = Path.Combine(pbxDisplaySettings.ImagePath, matches.First());
-                    var image = Image.FromFile(imageFileName);
-                    if (pbxDisplaySettings.Rotate != 0)
-                    {
-                        RotateImage(ref image, pbxDisplaySettings.Rotate);
-                    }
-                    form.BackgroundImage= image;
-                    //background.Dock = DockStyle.Fill;
+                    imageFileName = Path.Combine(imagePath, matches.First());
                 }
+                else
+                {
+                    imageFileName = $"pix\\missing_{form.Tag}.png";
+                }
+
+                var image = Image.FromFile(imageFileName);
+                if (screen.Rotate != 0)
+                {
+                    RotateImage(ref image, screen.Rotate);
+                }
+                form.BackgroundImage = image;
             }
+        
         }
 
-        private Image Resize(Image image, int width, int height   ) 
+        private static Image Resize(Image image, int width, int height)
         {
             var destRect = new Rectangle(0, 0, width, height);
             var destImage = new Bitmap(width, height);
@@ -100,9 +124,9 @@ namespace PinballPlayerSelect
             return destImage;
         }
 
-        public void DisplaySelection(Form form, DisplaySettings displaySettings, int currentNumberOfPlayers = 1)
+        public void DisplaySelection(Form form, Screen screensettings, Overlay overlaySettings, int currentNumberOfPlayers = 1)
         {
-            if (!displaySettings.ShowImage)
+            if (overlaySettings?.Prefix == null)
             {
                 _logger.Log(LogLevel.Debug, $"No selection on this display for this table");
                 return;
@@ -111,25 +135,24 @@ namespace PinballPlayerSelect
             var player = form.Controls.OfType<PictureBox>().FirstOrDefault(q => q.Tag.Equals("Player"));
             if (player == null) throw new Exception("PictureBox not found");
 
-            string pattern = $"{displaySettings.Prefix}{currentNumberOfPlayers}.*";
+            string pattern = $"{overlaySettings.Prefix}{currentNumberOfPlayers}.*";
             var fileMatches = Directory.GetFiles(".\\pix", pattern);
             if (!fileMatches.Any())
             {
-                _logger.Warn($"Cannot find any file with pattern '{pattern}'");
+                OutputHelper.ShowMessage($"Cannot find any file with pattern '{pattern}'");
                 return;
             }
 
             var selectionImage = Image.FromFile(fileMatches.First());
-            var resizedImage= Resize(selectionImage, displaySettings.Width * form.Width / 100, displaySettings.Height * form.Height / 100);
-            if (displaySettings.Rotate != 0)
+            var resizedImage = Resize(selectionImage, overlaySettings.Width * form.Width / 100, overlaySettings.Height * form.Height / 100);
+            if (screensettings.OverlayRotate != 0)
             {
-                RotateImage(ref resizedImage, displaySettings.Rotate);
+                RotateImage(ref resizedImage, screensettings.OverlayRotate);
             }
 
             player.Image = resizedImage;
             player.Width = resizedImage.Width;
             player.Height = resizedImage.Height;
-
 
             player.Left = (form.Width - player.Width) / 2;
             player.Top = (form.Height - player.Height) / 2;

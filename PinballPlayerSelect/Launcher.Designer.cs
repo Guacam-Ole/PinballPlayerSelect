@@ -39,14 +39,15 @@
             this.ClientSize = new System.Drawing.Size(100, 100);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
             this.Name = "Launcher";
             this.Opacity = 0D;
             this.ShowInTaskbar = false;
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Launcher";
-            this.TopMost = true;
             this.TransparencyKey = System.Drawing.Color.Red;
             this.Load += new System.EventHandler(this.Launcher_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Launcher_KeyDown);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this._screenKeydown);
             this.ResumeLayout(false);
 
         }

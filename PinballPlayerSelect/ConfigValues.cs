@@ -1,28 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace PinballPlayerSelect
 {
     public class ConfigValues
     {
-        public PinballX PinballX { get; set; }
-        public Select Selection { get; set; }
+        public Media Media { get; set; }
+        public Screens Screens { get; set; }
+        public Input Input { get; set; }
         public Launch Launch { get; set; }
-        public List<DisplayGroup> Displays { get; set; }
+        public List<OverlayGroup> Overlays { get; set; }
     }
 
-    public class DisplayGroup
+    public class OverlayGroup
     {
-        public string File { get; set; }
-        public DisplaySettings BackGlass { get; set; }
-        public DisplaySettings Dmd { get; set; }
-        public DisplaySettings Table { get; set; }
+        public string Filter { get; set; }
+        public Overlay BackGlass { get; set; }
+        public Overlay Dmd { get; set; }
+        public Overlay PlayField { get; set; }
     }
 
-    public class Select
+    public class Input
     {
-        public int ReturnToPinballX { get; set; }
+        public int Exit { get; set; }
         public int StartGame { get; set; }
         public int MorePlayers { get; set; }
         public int LessPlayers { get; set; }
@@ -45,50 +44,40 @@ namespace PinballPlayerSelect
         public string FourPlayers { get; set; }
     }
 
-    public class DisplaySettings
+    public class Overlay
     {
-        public bool Enabled { get; set; } = true;
-        public bool ShowImage { get; set; }
-        public bool Background { get; set; }
+
         public string Prefix { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public int Rotate { get; set; } = -1;
+        
     }
 
-    public class PinballX
+    public class Media
     {
-        public string MediaPath { get; set; }
-        public string ConfigIniFile { get; set; }
-        public PinballXDisplay Table { get; set; }
-        public PinballXDisplay BackGlass { get; set; }
-        public PinballXDisplay Dmd { get; set; }
+        public string Root { get; set; }
+        public string PlayField { get; set; }
+        public string BackGlass { get; set; }
+        public string Dmd { get; set; }
     }
 
-    //public class Media
-    //{
-    //    public string Path { get; set; }
-    //    public MediaPath BackGlass { get; set; } = new MediaPath();
-    //    public MediaPath Table { get; set; } = new MediaPath();
-    //    public MediaPath Dmd { get; set; } = new MediaPath();
-    //}
-
-    //public class MediaPath
-    //{
-    //    public string Videos { get; set; }
-    //    public string Images { get; set; }
-    //}
-
-    public class PinballXDisplay
+    public class Screens
     {
-        public int Monitor { get; set; }
+        public Screen PlayField { get; set; } = new Screen() { Enabled = false };
+        public Screen BackGlass { get; set; } = new Screen() { Enabled = false };
+        public Screen Dmd { get; set; } = new Screen() { Enabled = false };
+    }
+
+    public class Screen
+    {
+        public int Id { get; set; }
         public int Rotate { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
         public int X { get; set; }
         public int Y { get; set; }
-        public string ImagePath { get; set; }
+        public int OverlayRotate { get; set; }
+        public bool Enabled { get; set; } = true;
+        public bool Background { get; set; } = true;
     }
-
-
 }

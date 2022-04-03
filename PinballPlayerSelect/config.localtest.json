@@ -7,13 +7,13 @@
       "id": 0,
       "rotate": 270,
       "overlayrotate": 180,
-      "enabled":true
+      "enabled":false
     },
     "dmd": {
       "id": 0,
       "rotate": 270,
       "overlayrotate": 180,
-      "enabled": false
+      "enabled": true
     }
   },
   "overlays": [

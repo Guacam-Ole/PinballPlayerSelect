@@ -1,6 +1,6 @@
 {
   "media": {
-    "root": "\\\\DESKTOP-8P8OQ8B\\pinball\\PinballX\\Media\\Pinball FX3"
+    "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
   },
   "screens": {
     "playfield": {
@@ -10,10 +10,16 @@
       "enabled":true
     },
     "dmd": {
-      "id": 0,
+      "id": 1,
       "rotate": 270,
       "overlayrotate": 180,
-      "enabled": false
+      "enabled": true
+    },
+    "backglass": {
+      "id": 1,
+      "rotate": 0,
+      "overlayrotate": 0,
+      "enabled": true
     }
   },
   "overlays": [
@@ -37,6 +43,11 @@
       "filter": "FamilyGuy",
       "playfield": {
         "prefix": "simpsons",
+        "width": 50,
+        "height": 30
+      },
+      "backglass": {
+        "prefix": "turtlestrans",
         "width": 50,
         "height": 30
       }
