@@ -9,6 +9,7 @@ namespace PinballPlayerSelect
         public Input Input { get; set; }
         public Launch Launch { get; set; }
         public List<OverlayGroup> Overlays { get; set; }
+        public bool StayOpen { get; set; } = false;
     }
 
     public class OverlayGroup

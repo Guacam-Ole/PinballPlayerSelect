@@ -96,16 +96,30 @@ namespace PinballPlayerSelect
             }
             else
             {
+                //string batchContents = $"cd \"{Config.Configuration.Launch.WorkingPath}\"\r\n\"{target}\" {parameters}";
+                //WriteBatch(batchContents);
+
+
                 var process = new ProcessStartInfo
                 {
                     Arguments = parameters,
                     FileName = target,
                     WorkingDirectory = Config.Configuration.Launch.WorkingPath
                 };
-                Process.Start(process);
+                var processInfo = Process.Start(process);
+                if (processInfo != null && !processInfo.HasExited && Config.Configuration.StayOpen)
+                {
+                    processInfo.WaitForExit();
+                }
                 Close();
+                     
             }
         }
+
+        //private void WriteBatch(string contents)
+        //{
+        //    File.WriteAllText("launch.bat", contents);
+        //}
 
         private void _screenKeydown(object sender, KeyEventArgs e)
         {

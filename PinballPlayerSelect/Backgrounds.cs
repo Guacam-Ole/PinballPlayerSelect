@@ -46,16 +46,8 @@ namespace PinballPlayerSelect
             }
         }
 
-        //public static void SetResolution(Form form, Screen pbxDisplaySettings)
-        //{
-        //    form.Width = pbxDisplaySettings.Width;
-        //    form.Height = pbxDisplaySettings.Height; ;
-        //    form.Left = 0;
-        //    form.Top = 0;
-        //}
-
         public static void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
-        {
+       {
             if (System.Windows.Forms.Screen.AllScreens.Length < screen.Id + 1)
             {
                 OutputHelper.ShowMessage($"Screen {screen.Id} does not exist");

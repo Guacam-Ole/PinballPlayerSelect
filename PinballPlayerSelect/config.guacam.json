@@ -1,19 +1,24 @@
 {
+  "stayopen": true,
   "media": {
     "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
   },
   "screens": {
     "playfield": {
       "id": 0,
-      "rotate": 270,
-      "overlayrotate": 180,
-      "enabled":true
+      "rotate": 180,
+      "overlayrotate": 270,
+      "enabled": false
     },
     "dmd": {
-      "id": 1,
-      "rotate": 270,
-      "overlayrotate": 180,
-      "enabled": true
+      "id": 2,
+      "rotate": 0,
+      "overlayrotate": 0,
+      "enabled": true,
+      "x": 0,
+      "y": 105,
+      "width": 1280,
+      "height": 460
     },
     "backglass": {
       "id": 1,
@@ -34,22 +39,22 @@
     {
       "filter": "WMS_Indiana_Jones",
       "DMD": {
-        "prefix": "choosewisely",
+        "prefix": "wisely",
         "width": 100,
         "height": 100
       }
     },
     {
       "filter": "FamilyGuy",
-      "playfield": {
-        "prefix": "simpsons",
-        "width": 50,
-        "height": 30
-      },
       "backglass": {
         "prefix": "turtlestrans",
         "width": 50,
         "height": 30
+      },
+      "DMD": {
+        "prefix": "indyhands",
+        "width": 100,
+        "height": 100
       }
     }
   ],
@@ -66,6 +71,6 @@
     "exit": 81, // q
     "startgame": 13, // Enter
     "moreplayers": 161, // Right Shift
-    "lessplayers": 160, // Left Shift
+    "lessplayers": 160 // Left Shift
   }
 }

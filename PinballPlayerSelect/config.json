@@ -45,7 +45,7 @@
   "launch": {
     "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX3",
     "executable": "Pinball FX3.exe",
-    "parameters": "-applaunch 442120 -table_[TABLEFILE] -offline [PLAYER]",
+    "parameters": "-applaunch 442120 \"-table_[TABLEFILE]\" [PLAYER] -offline [PLAYER] -class",
 
     "TwoPlayers": "-hotseat_2",
     "ThreePlayers": "-hotseat_3",
