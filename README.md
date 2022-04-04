@@ -1,5 +1,5 @@
-# About PinballPlayerSelect (PBS)
-Pinballplayer-Select (PBS) is a tool to allow the selection of number of players in your Pinball Cabinet remaining the "look and feel". 
+# About PinballPlayerSelect (PPS)
+Pinballplayer-Select (PPS) is a tool to allow the selection of number of players in your Pinball Cabinet remaining the "look and feel". 
 This documentation assumes you are using it with PinballX and Pinfball FX3. So for any other combination modify your settings accordingly.
 
 ## Installation
@@ -8,7 +8,7 @@ Just extract the files into any directory on your windows machine. This program 
 ## Configuration
 ### PinballX
 **Before you change anything to PinballX make sure you have a backup of the PinballX.ini** 
-In Addition you will need some of the properties there and copy them over to PBS.
+In Addition you will need some of the properties there and copy them over to PPS.
 
 _You can use the settings-tool instead, but for the ease of this document we will describe working directly in the Ini-File_
 1. Open `PinballX`.ini in the `config` Directory of PinballX
@@ -18,14 +18,14 @@ _You can use the settings-tool instead, but for the ease of this document we wil
 ```
 [PinballFX3]
 WorkingPath=C:\pinball\PlayerSelect
-Executable=PBS.exe
+Executable=PPS.exe
 Parameters=[TABLEFILE]
 ```
-(Change "WorkingPath to the folder where you have PBS installed)
+(Change "WorkingPath to the folder where you have PPS installed)
 
 
-### PBS
-Now you can modify the configfile from PBS. Start by copying "config.example.json" to "config.json". THe config.json should now look like this:
+### PPS
+Now you can modify the configfile from PPS. Start by copying "config.example.json" to "config.json". THe config.json should now look like this:
 ```
 {
   "media": {
@@ -88,16 +88,16 @@ If your keycodes differ from the default (shift for right/left, enter for select
 Now you should be good to go.
 
 ## Test
-PBS allows you to run int in Testmode. You can do this by simply starting it without any parameter. (you should have mouse/keyboard attached when doing this). 
+PPS allows you to run int in Testmode. You can do this by simply starting it without any parameter. (you should have mouse/keyboard attached when doing this). 
 In this case instead of launching a game after the "Start"-Button has been pressed it only displays the commandline that would have been called instead.
 In addition all configured screns are now resizable and movable. While you do that the position and size informations are shown:
 
 ## Finishing touches
 You might need to change the properties to be run as Administrator. In addition when working with Steam it can be a bit annoying when a new Program wants to start a game. 
-This is usually only displayed ONCE but you have to allow the game that single time. Because any external launcher like PinballX is ABOVE that steam window you should run PBS once from the commandline to check if everything works:
-`PBS [tablename]`
+This is usually only displayed ONCE but you have to allow the game that single time. Because any external launcher like PinballX is ABOVE that steam window you should run PPS once from the commandline to check if everything works:
+`PPS [tablename]`
 so for example:
-`PBS FamilyGuy`
+`PPS FamilyGuy`
 
 This should start Pinball FX3 with Family Guy and the number of Players you selected
 
@@ -146,10 +146,10 @@ The current example has the default overlay (no filter), a special overlay for t
 ```
 
 ## Advanced Configuration:
-PBS has some advanced configuration Options you _usually_ should not need to touch. But you are free to do anyways if your machine is somehow special.
+PPS has some advanced configuration Options you _usually_ should not need to touch. But you are free to do anyways if your machine is somehow special.
 
 ### Generic
-Adding `"stayopen":"true"` to the config will allow PBS to stay open until FX3 is closed. 
+Adding `"stayopen":"true"` to the config will allow PPS to stay open until FX3 is closed. 
 Adding `"batchmode":"true"` to the config will not start FX3 at all but create a batchfile instead that would open it
 
 ### Media
@@ -186,7 +186,7 @@ By default you only need to provide the ScreenId (0 or above). Then the complete
 ```
 
 #### OnTop
-Usually PinballX shows its "loading"-animation on the playfield-screen. If you also want to use that screen you can force PBS to be on top of it by adding the "`ontop`" setting:
+Usually PinballX shows its "loading"-animation on the playfield-screen. If you also want to use that screen you can force PPS to be on top of it by adding the "`ontop`" setting:
 ```
 {
    "playfield":
