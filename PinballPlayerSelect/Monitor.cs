@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace PinballPlayerSelect
@@ -12,6 +13,15 @@ namespace PinballPlayerSelect
         private Backgrounds _background;
         public event EventHandler<KeyEventArgs> KeyPressed;
 
+
+        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        const UInt32 SWP_NOSIZE = 0x0001;
+        const UInt32 SWP_NOMOVE = 0x0002;
+        const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
         public Monitor()
         {
@@ -29,11 +39,15 @@ namespace PinballPlayerSelect
             Tag = tag;
         }
 
+        private void OnTop()
+        {
+            SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
+        }
+
         private void Monitor_Load(object sender, EventArgs e)
         {
+            if (_screenSettings.OnTop) OnTop();
             Backgrounds.PaintBackgroundImage(this, _screenSettings, _imagepath, _tableName);
-        //    Backgrounds.SetResolution(this, _screenSettings);
-            //Application.DoEvents();
             RedrawSelection(1);
             if (_tableName == "test") TestMode();
         }

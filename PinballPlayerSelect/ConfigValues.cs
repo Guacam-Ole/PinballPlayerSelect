@@ -10,6 +10,7 @@ namespace PinballPlayerSelect
         public Launch Launch { get; set; }
         public List<OverlayGroup> Overlays { get; set; }
         public bool StayOpen { get; set; } = false;
+        public bool BatchMode { get; set; } = false;
     }
 
     public class OverlayGroup
@@ -80,5 +81,6 @@ namespace PinballPlayerSelect
         public int OverlayRotate { get; set; }
         public bool Enabled { get; set; } = true;
         public bool Background { get; set; } = true;
+        public bool OnTop { get; set; } = false;
     }
 }

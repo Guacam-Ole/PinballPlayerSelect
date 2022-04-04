@@ -43,7 +43,7 @@ namespace PinballPlayerSelect
             if (Config.Configuration.Screens.Dmd.Enabled)
             {
                 _dmd = new Monitor(Config.Configuration.Screens.Dmd, _overlay.Dmd, _tableName, Config.Configuration.Media.Dmd, "dmd");
-                _dmd.KeyPressed+= _screenKeydown;
+                _dmd.KeyPressed += _screenKeydown;
                 _dmd.Show();
             }
             if (Config.Configuration.Screens.BackGlass.Enabled)
@@ -54,7 +54,6 @@ namespace PinballPlayerSelect
             }
         }
 
-       
         private void RedrawPlayerSelect()
         {
             //Application.DoEvents();
@@ -96,30 +95,28 @@ namespace PinballPlayerSelect
             }
             else
             {
-                //string batchContents = $"cd \"{Config.Configuration.Launch.WorkingPath}\"\r\n\"{target}\" {parameters}";
-                //WriteBatch(batchContents);
-
-
-                var process = new ProcessStartInfo
+                if (Config.Configuration.BatchMode)
                 {
-                    Arguments = parameters,
-                    FileName = target,
-                    WorkingDirectory = Config.Configuration.Launch.WorkingPath
-                };
-                var processInfo = Process.Start(process);
-                if (processInfo != null && !processInfo.HasExited && Config.Configuration.StayOpen)
+                    string batchContents = $"cd \"{Config.Configuration.Launch.WorkingPath}\"\r\n\"{target}\" {parameters}";
+                    File.WriteAllText("launch.bat", batchContents);
+                }
+                else
                 {
-                    processInfo.WaitForExit();
+                    var process = new ProcessStartInfo
+                    {
+                        Arguments = parameters,
+                        FileName = target,
+                        WorkingDirectory = Config.Configuration.Launch.WorkingPath
+                    };
+                    var processInfo = Process.Start(process);
+                    if (processInfo != null && !processInfo.HasExited && Config.Configuration.StayOpen)
+                    {
+                        processInfo.WaitForExit();
+                    }
                 }
                 Close();
-                     
             }
         }
-
-        //private void WriteBatch(string contents)
-        //{
-        //    File.WriteAllText("launch.bat", contents);
-        //}
 
         private void _screenKeydown(object sender, KeyEventArgs e)
         {
