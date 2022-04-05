@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     public class ConfigValues
     {

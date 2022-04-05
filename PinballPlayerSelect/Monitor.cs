@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     public partial class Monitor : Form
     {
@@ -37,6 +37,7 @@ namespace PinballPlayerSelect
             _tableName = tablename;
             _imagepath = imagepath;
             Tag = tag;
+            Text = tag;
         }
 
         private void OnTop()
@@ -64,12 +65,13 @@ namespace PinballPlayerSelect
 
         private void ShowCoords(object sender, EventArgs e)
         {
-            string txt= $" X:{this.Left} Y:{this.Top} Width: {this.Width} Height: {this.Height}\n\nAvailable Screens:\n";
+            string txt= $" X:{this.Left} Y:{this.Top} Width: {this.Width} Height: {this.Height}\n\nAvailable Screens:\n\n\n";
 
             int counter = 0;
             foreach (var screen in System.Windows.Forms.Screen.AllScreens)
             {
-                txt += $"screen {counter} {screen.DeviceName},X:{screen.WorkingArea.Left} Y:{screen.WorkingArea.Top} Width: {screen.WorkingArea.Width} height: {screen.WorkingArea.Height}\n";
+                txt += $"screen {counter} X:{screen.WorkingArea.Left} Y:{screen.WorkingArea.Top} Width: {screen.WorkingArea.Width} height: {screen.WorkingArea.Height} [{screen.DeviceName}] \n";
+                txt += $"(relative pos): X:{Left - screen.WorkingArea.Left} Y:{Top - screen.WorkingArea.Top}\n\n";
                 counter++;
             }
             coordsInfo.Text = txt;

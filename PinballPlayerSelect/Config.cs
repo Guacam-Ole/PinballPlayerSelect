@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     public class Config
     {

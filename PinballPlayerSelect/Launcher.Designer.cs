@@ -1,4 +1,4 @@
-﻿namespace PinballPlayerSelect
+﻿namespace PPS
 {
     partial class Launcher
     {

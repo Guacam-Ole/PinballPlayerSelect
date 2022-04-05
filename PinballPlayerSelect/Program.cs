@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     internal static class Program
     {
@@ -13,15 +11,21 @@ namespace PinballPlayerSelect
         ///  The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             AllocConsole();
-            string tableName;
+            string tableName = null;
             if (args.Length == 0)
             {
                 OutputHelper.ShowMessage("No parameter found, running in testmode (open with \"PinballPlayerSelect <tablename>\" for normal operation)");
                 tableName = "test";
-            } else
+            }
+            else if (args[0] == "config")
+            {
+                new Import().ShowDialog();
+                return;
+            }
+            else
             {
                 tableName = args[0];
             }
@@ -35,7 +39,6 @@ namespace PinballPlayerSelect
                 Application.SetHighDpiMode(HighDpiMode.SystemAware);
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-
 
                 var specificDisplay = config.Overlays.FirstOrDefault(q => q.Filter == tableName);
                 var genericDisplay = config.Overlays.FirstOrDefault(q => q.Filter == null);
@@ -52,9 +55,6 @@ namespace PinballPlayerSelect
 
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool AllocConsole();
-
+        private static extern bool AllocConsole();
     }
-
-
 }

@@ -5,7 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     public partial class Launcher : Form
     {

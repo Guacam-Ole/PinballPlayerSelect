@@ -2,7 +2,7 @@
   "profiles": {
     "PinballPlayerSelect": {
       "commandName": "Project",
-      "commandLineArgs": "token"
+      "commandLineArgs": "config"
     }
   }
 }

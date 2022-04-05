@@ -1,4 +1,4 @@
-﻿namespace PinballPlayerSelect
+﻿namespace PPS
 {
     partial class Monitor
     {
@@ -47,9 +47,12 @@
             // 
             // coordsInfo
             // 
-            this.coordsInfo.Location = new System.Drawing.Point(6, 9);
+            this.coordsInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.coordsInfo.Location = new System.Drawing.Point(86, 109);
             this.coordsInfo.Name = "coordsInfo";
-            this.coordsInfo.Size = new System.Drawing.Size(782, 224);
+            this.coordsInfo.Size = new System.Drawing.Size(601, 272);
             this.coordsInfo.TabIndex = 2;
             this.coordsInfo.Text = "label1";
             this.coordsInfo.Visible = false;

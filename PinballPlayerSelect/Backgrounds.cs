@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace PinballPlayerSelect
+namespace PPS
 {
     public class Backgrounds
     {
@@ -72,6 +72,12 @@ namespace PinballPlayerSelect
 
             if (!string.IsNullOrEmpty(imagePath))
             {
+                if (!Directory.Exists(imagePath))
+                {
+                    OutputHelper.ShowMessage($"Cannot open path {imagePath}");
+                    return;
+                }
+                
                 var matches = Directory.GetFiles(imagePath, $"{tablename}.*");
                 string imageFileName;
                 if (matches.Any())
