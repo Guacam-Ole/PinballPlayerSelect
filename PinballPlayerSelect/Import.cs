@@ -321,11 +321,13 @@ namespace PPS
 
         private void FinishConfig()
         {
+            var playfield = GetScreenConfigFromUi("Display");
+            playfield.Enabled = false;  // Is overlayed by PinballX
             _configValues.Screens = new Screens
             {
                 BackGlass = GetScreenConfigFromUi("BackGlass"),
                 Dmd = GetScreenConfigFromUi("DMD"),
-                PlayField = GetScreenConfigFromUi("Display")
+                PlayField = playfield
             };
 
             _configValues.Overlays = new List<OverlayGroup>
@@ -341,8 +343,8 @@ namespace PPS
 
         private void SaveConfig()
         {
-            var configContents = JsonConvert.SerializeObject(_configValues);
-            File.WriteAllText(Path.Combine(".\\pix", "config.json"), configContents);
+            var configContents = JsonConvert.SerializeObject(_configValues, Formatting.Indented);
+            File.WriteAllText("config.json", configContents);
         }
 
         private Overlay GetOverlayConfigFromUi(string tag)
