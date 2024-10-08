@@ -67,6 +67,19 @@
       "media": {
         "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
       }
+    },
+    {
+      "name": "fx",
+      "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX",
+      "executable": "PinballFX.exe",
+      "parameters": "-applaunch 2328760 -table [TABLEFILE] [PLAYER] -offline",
+
+      "TwoPlayers": "-hotseat_2",
+      "ThreePlayers": "-hotseat_3",
+      "FourPlayers": "-hotseat_4",
+      "media": {
+        "root": "c:\\pinball\\PinballX\\Media\\Pinball FX"
+      }
     }
   ],
   "Input": {
