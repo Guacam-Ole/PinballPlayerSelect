@@ -1,7 +1,4 @@
 {
-  "media": {
-    "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
-  },
   "screens": {
     "playfield": {
       "id": 0,
@@ -32,18 +29,24 @@
       }
     }
   ],
-  "launch": {
-    "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX3",
-    "executable": "Pinball FX3.exe",
-    "parameters": "-applaunch 442120 \"-table_[TABLEFILE]\" [PLAYER] -offline -class",
+  "emulators": [
+    {
+      "name": "fx3"
+      "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX3",
+      "executable": "Pinball FX3.exe",
+      "parameters": "-applaunch 442120 \"-table_[TABLEFILE]\" [PLAYER] -offline -class",
 
-    "TwoPlayers": "-hotseat_2",
-    "ThreePlayers": "-hotseat_3",
-    "FourPlayers": "-hotseat_4"
-  },
+      "TwoPlayers": "-hotseat_2",
+      "ThreePlayers": "-hotseat_3",
+      "FourPlayers": "-hotseat_4",
+      "media": {
+        "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
+      }
+    }
+  ],
   "Input": {
-    "exit": 81, 
-    "startgame": 13, 
+    "exit": 81,
+    "startgame": 13,
     "moreplayers": 161,
     "lessplayers": 160
   }
