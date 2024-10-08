@@ -4,10 +4,9 @@ namespace PPS
 {
     public class ConfigValues
     {
-        public Media Media { get; set; }
         public Screens Screens { get; set; }
         public Input Input { get; set; }
-        public Launch Launch { get; set; }
+        public List<Emulator> Emulators { get; set; }
         public List<OverlayGroup> Overlays { get; set; }
         public bool StayOpen { get; set; } = false;
         public bool BatchMode { get; set; } = false;
@@ -35,8 +34,9 @@ namespace PPS
         public int PlayerCountAtStart { get; set; } = 1;
     }
 
-    public class Launch
+    public class Emulator
     {
+        public string Name { get; set; }
         public string WorkingPath { get; set; }
         public string Executable { get; set; }
         public string Parameters { get; set; }
@@ -44,15 +44,14 @@ namespace PPS
         public string TwoPlayers { get; set; }
         public string ThreePlayers { get; set; }
         public string FourPlayers { get; set; }
+        public Media Media { get; set; }
     }
 
     public class Overlay
     {
-
         public string Prefix { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        
     }
 
     public class Media

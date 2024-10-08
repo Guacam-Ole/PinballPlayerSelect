@@ -28,21 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.Close = new System.Windows.Forms.Button();
+            this.CloseApp = new System.Windows.Forms.Button();
             this.Contents = new System.Windows.Forms.TextBox();
             this.Caption = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // Close
             // 
-            this.Close.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-            this.Close.Location = new System.Drawing.Point(356, 409);
-            this.Close.Name = "Close";
-            this.Close.Size = new System.Drawing.Size(94, 29);
-            this.Close.TabIndex = 0;
-            this.Close.Text = "OkeyDokey";
-            this.Close.UseVisualStyleBackColor = true;
-            this.Close.Click += new System.EventHandler(this.Close_Click);
+            this.CloseApp.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.CloseApp.Location = new System.Drawing.Point(356, 409);
+            this.CloseApp.Name = "Close";
+            this.CloseApp.Size = new System.Drawing.Size(94, 29);
+            this.CloseApp.TabIndex = 0;
+            this.CloseApp.Text = "OkeyDokey";
+            this.CloseApp.UseVisualStyleBackColor = true;
+            this.CloseApp.Click += new System.EventHandler(this.Close_Click);
             // 
             // Contents
             // 
@@ -72,7 +72,7 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.Caption);
             this.Controls.Add(this.Contents);
-            this.Controls.Add(this.Close);
+            this.Controls.Add(this.CloseApp);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "DisplayText";
             this.Text = "Important stuff:";
@@ -83,7 +83,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Button Close;
+        private System.Windows.Forms.Button CloseApp;
         private System.Windows.Forms.TextBox Contents;
         private System.Windows.Forms.Label Caption;
     }

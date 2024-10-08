@@ -10,14 +10,14 @@ namespace PPS
         private readonly Overlay _overlaySettings;
         private readonly string _tableName;
         private readonly string _imagepath;
-        private Backgrounds _background;
+        private readonly Backgrounds _background;
+
         public event EventHandler<KeyEventArgs> KeyPressed;
 
-
-        static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
-        const UInt32 SWP_NOSIZE = 0x0001;
-        const UInt32 SWP_NOMOVE = 0x0002;
-        const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
+        private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private const UInt32 SWP_NOSIZE = 0x0001;
+        private const UInt32 SWP_NOMOVE = 0x0002;
+        private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -60,12 +60,12 @@ namespace PPS
             PlayerNum.Visible = false;
             this.SizeChanged += ShowCoords;
             this.Move += ShowCoords;
-            ShowCoords(null,null);
+            ShowCoords(null, null);
         }
 
         private void ShowCoords(object sender, EventArgs e)
         {
-            string txt= $" X:{this.Left} Y:{this.Top} Width: {this.Width} Height: {this.Height}\n\nAvailable Screens:\n\n\n";
+            string txt = $" X:{this.Left} Y:{this.Top} Width: {this.Width} Height: {this.Height}\n\nAvailable Screens:\n\n\n";
 
             int counter = 0;
             foreach (var screen in System.Windows.Forms.Screen.AllScreens)
@@ -84,7 +84,7 @@ namespace PPS
 
         private void Monitor_KeyDown(object sender, KeyEventArgs e)
         {
-            KeyPressed(this,e);
+            KeyPressed(this, e);
         }
     }
 }

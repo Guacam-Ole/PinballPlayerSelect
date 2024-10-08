@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -12,6 +13,8 @@ namespace PPS
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(Keys key);
 
+        private readonly ConfigValues _config;
+        private readonly Emulator _emulator;
         private readonly string _tableName;
         private readonly OverlayGroup _overlay;
         private int _numPlayers;
@@ -24,31 +27,33 @@ namespace PPS
             InitializeComponent();
         }
 
-        public Launcher(string tableName, OverlayGroup _overlaysettings) : this()
+        public Launcher(ConfigValues config, string emulator, string tableName, OverlayGroup overlaysettings) : this()
         {
+            _config = config;
+            _emulator = _config.Emulators.FirstOrDefault(q => q.Name == emulator) ?? throw new ArgumentException($"'{emulator}' is not configured. Please be aware that this is case-sensitive");
             _tableName = tableName;
-            _overlay = _overlaysettings;
-            _numPlayers = Config.Configuration.Input.PlayerCountAtStart;
+            _overlay = overlaysettings;
+            _numPlayers = config.Input.PlayerCountAtStart;
             Size = new Size(0, 0);
         }
 
         private void Launcher_Load(object sender, EventArgs e)
         {
-            if (Config.Configuration.Screens.PlayField.Enabled)
+            if (_config.Screens.PlayField.Enabled)
             {
-                _playfield = new Monitor(Config.Configuration.Screens.PlayField, _overlay.PlayField, _tableName, Config.Configuration.Media.PlayField, "playfield");
+                _playfield = new Monitor( _config.Screens.PlayField, _overlay.PlayField, _tableName, _emulator.Media.PlayField, "playfield");
                 _playfield.KeyPressed += _screenKeydown;
                 _playfield.Show();
             }
-            if (Config.Configuration.Screens.Dmd.Enabled)
+            if (_config.Screens.Dmd.Enabled)
             {
-                _dmd = new Monitor(Config.Configuration.Screens.Dmd, _overlay.Dmd, _tableName, Config.Configuration.Media.Dmd, "dmd");
+                _dmd = new Monitor( _config.Screens.Dmd, _overlay.Dmd, _tableName, _emulator.Media.Dmd, "dmd");
                 _dmd.KeyPressed += _screenKeydown;
                 _dmd.Show();
             }
-            if (Config.Configuration.Screens.BackGlass.Enabled)
+            if (_config.Screens.BackGlass.Enabled)
             {
-                _backglass = new Monitor(Config.Configuration.Screens.BackGlass, _overlay.BackGlass, _tableName, Config.Configuration.Media.BackGlass, "backglass");
+                _backglass = new Monitor( _config.Screens.BackGlass, _overlay.BackGlass, _tableName, _emulator.Media.BackGlass, "backglass");
                 _backglass.KeyPressed += _screenKeydown;
                 _backglass.Show();
             }
@@ -56,10 +61,9 @@ namespace PPS
 
         private void RedrawPlayerSelect()
         {
-            //Application.DoEvents();
-            if (_playfield != null) _playfield.RedrawSelection(_numPlayers);
-            if (_dmd != null) _dmd.RedrawSelection(_numPlayers);
-            if (_backglass != null) _backglass.RedrawSelection(_numPlayers);
+            _playfield?.RedrawSelection(_numPlayers);
+            _dmd?.RedrawSelection(_numPlayers);
+            _backglass?.RedrawSelection(_numPlayers);
         }
 
         private void ExitProgram()
@@ -69,24 +73,24 @@ namespace PPS
 
         private void LaunchGame()
         {
-            string target = Path.Combine(Config.Configuration.Launch.WorkingPath, Config.Configuration.Launch.Executable);
-            string parameters = Config.Configuration.Launch.Parameters.Replace("[TABLEFILE]", _tableName) + " ";
+            string target = Path.Combine(_emulator.WorkingPath, _emulator.Executable);
+            string parameters = _emulator.Parameters.Replace("[TABLEFILE]", _tableName) + " ";
             switch (_numPlayers)
             {
                 case 1:
-                    parameters = parameters.Replace("[PLAYER]", Config.Configuration.Launch.OnePlayer);
+                    parameters = parameters.Replace("[PLAYER]", _emulator.OnePlayer);
                     break;
 
                 case 2:
-                    parameters = parameters.Replace("[PLAYER]", Config.Configuration.Launch.TwoPlayers);
+                    parameters = parameters.Replace("[PLAYER]", _emulator.TwoPlayers);
                     break;
 
                 case 3:
-                    parameters = parameters.Replace("[PLAYER]", Config.Configuration.Launch.ThreePlayers);
+                    parameters = parameters.Replace("[PLAYER]", _emulator.ThreePlayers);
                     break;
 
                 case 4:
-                    parameters = parameters.Replace("[PLAYER]", Config.Configuration.Launch.FourPlayers);
+                    parameters = parameters.Replace("[PLAYER]", _emulator.FourPlayers);
                     break;
             }
             if (_tableName == "test")
@@ -95,9 +99,9 @@ namespace PPS
             }
             else
             {
-                if (Config.Configuration.BatchMode)
+                if (_config.BatchMode)
                 {
-                    string batchContents = $"cd \"{Config.Configuration.Launch.WorkingPath}\"\r\n\"{target}\" {parameters}";
+                    string batchContents = $"cd \"{_emulator.WorkingPath}\"\r\n\"{target}\" {parameters}";
                     File.WriteAllText("launch.bat", batchContents);
                 }
                 else
@@ -106,10 +110,10 @@ namespace PPS
                     {
                         Arguments = parameters,
                         FileName = target,
-                        WorkingDirectory = Config.Configuration.Launch.WorkingPath
+                        WorkingDirectory = _emulator.WorkingPath
                     };
                     var processInfo = Process.Start(process);
-                    if (processInfo != null && !processInfo.HasExited && Config.Configuration.StayOpen)
+                    if (processInfo != null && !processInfo.HasExited && _config.StayOpen)
                     {
                         processInfo.WaitForExit();
                     }
@@ -120,57 +124,57 @@ namespace PPS
 
         private void _screenKeydown(object sender, KeyEventArgs e)
         {
-            if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.MorePlayers)))
+            if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.MorePlayers)))
             {
                 if (_numPlayers < 4)
                 {
                     _numPlayers++;
                 }
-                else if (Config.Configuration.Input.Loop)
+                else if (_config.Input.Loop)
                 {
                     _numPlayers = 1;
                 }
                 RedrawPlayerSelect();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.LessPlayers)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.LessPlayers)))
             {
                 if (_numPlayers > 1)
                 {
                     _numPlayers--;
                 }
-                else if (Config.Configuration.Input.Loop)
+                else if (_config.Input.Loop)
                 {
                     _numPlayers = 4;
                 }
                 RedrawPlayerSelect();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.StartGame)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.StartGame)))
             {
                 LaunchGame();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.Exit)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.Exit)))
             {
                 ExitProgram();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.OnePlayer)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.OnePlayer)))
             {
                 _numPlayers = 1;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.TwoPlayers)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.TwoPlayers)))
             {
                 _numPlayers = 2;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.ThreePlayers)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.ThreePlayers)))
             {
                 _numPlayers = 3;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
-            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)Config.Configuration.Input.FourPlayers)))
+            else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.FourPlayers)))
             {
                 _numPlayers = 4;
                 RedrawPlayerSelect();

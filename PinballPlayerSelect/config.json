@@ -55,6 +55,6 @@
     "exit": 81, // q
     "startgame": 13, // Enter
     "moreplayers": 161, // Right Shift
-    "lessplayers": 160, // Left Shift
+    "lessplayers": 160 // Left Shift
   }
 }

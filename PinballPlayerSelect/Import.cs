@@ -13,9 +13,10 @@ namespace PPS
 {
     public partial class Import : Form
     {
+        private const string _separator = "|";
         private ConfigValues _configValues;
         private readonly Timer _previewTimer = new() { Interval = 2400 };
-        private readonly Random _random = new Random();
+        private readonly Random _random = new();
 
         public Import()
         {
@@ -33,7 +34,6 @@ namespace PPS
                 ShowImageFromCombo(combo, numPlayers);
             }
         }
-
 
         private void pbxBrowse_Click(object sender, EventArgs e)
         {
@@ -65,7 +65,7 @@ namespace PPS
             }
             catch (Exception ex)
             {
-                MessageBox.Show( ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -76,7 +76,7 @@ namespace PPS
             PathPlayfield.Text = Path.Combine(rootpath, "Media", "Pinball FX3", "Table Images");
         }
 
-        private Screen GetScreenFromIni(KeyDataCollection data, string prefix = null)
+        private static Screen GetScreenFromIni(KeyDataCollection data, string prefix = null)
         {
             int id = data.IntParse("Monitor");
             if (id + 1 > System.Windows.Forms.Screen.AllScreens.Length)
@@ -107,7 +107,7 @@ namespace PPS
             return screen;
         }
 
-        private bool IsFullScreen(int screenId, int width, int height)
+        private static bool IsFullScreen(int screenId, int width, int height)
         {
             var screen = System.Windows.Forms.Screen.AllScreens[screenId];
             return screen.WorkingArea.Width == width && screen.WorkingArea.Height == height;
@@ -124,12 +124,19 @@ namespace PPS
             {
                 BatchMode = false,
                 StayOpen = false,
-                Launch = new Launch
-                {
-                    Executable = fx3["Executable"],
-                    Parameters = fx3["Parameters"] + " [PLAYER]",
-                    WorkingPath = fx3["WorkingPath"]
-                },
+                Emulators =
+                [
+                    new()
+                    {
+                        Executable = fx3["Executable"],
+                        Parameters = fx3["Parameters"] + " [PLAYER]",
+                        WorkingPath = fx3["WorkingPath"],
+                        Media = new Media
+                        {
+                            Root = Path.GetDirectoryName(pbxInput.Text)
+                        }
+                    }
+                ],
                 Input = new Input
                 {
                     Exit = input.IntParse("quit"),
@@ -139,10 +146,6 @@ namespace PPS
                     Loop = true,
                     PlayerCountAtStart = 1
                 },
-                Media = new Media
-                {
-                    Root = Path.GetDirectoryName(pbxInput.Text)
-                }
             };
 
             SetScreenPropertiesFromIni(iniData, "Display", "Window");
@@ -158,7 +161,7 @@ namespace PPS
             combo.SelectedValue = items.First(q => q.Value == "indyhands").Key;
         }
 
-        private Dictionary<string, Control> GetGroupControls(GroupBox parent, params string[] controlNames)
+        private static Dictionary<string, Control> GetGroupControls(GroupBox parent, params string[] controlNames)
         {
             var uiControls = new List<KeyValuePair<string, Control>>();
             foreach (var controlname in controlNames)
@@ -179,7 +182,7 @@ namespace PPS
             return GetGroupControls(GetOverlayGroup(screenName), "OverlayStyle", "OverlayWidth", "OverlayHeight");
         }
 
-        private KeyValuePair<string, Control> GetSingleControlByTag(GroupBox parent, string tag)
+        private static KeyValuePair<string, Control> GetSingleControlByTag(GroupBox parent, string tag)
         {
             return new KeyValuePair<string, Control>(tag, parent.Controls.OfType<Control>().First(q => q.Tag != null && q.Tag.Equals(tag)));
         }
@@ -238,7 +241,7 @@ namespace PPS
             }
         }
 
-        private Dictionary<int, string> GetValidScreens()
+        private static Dictionary<int, string> GetValidScreens()
         {
             var screens = new Dictionary<int, string>();
             int counter = 0;
@@ -249,14 +252,14 @@ namespace PPS
             return screens;
         }
 
-        private Dictionary<string, string> GetValidOverlays()
+        private static Dictionary<string, string> GetValidOverlays()
         {
             var filenames = new Dictionary<string, string>() { { "", "(none)" } };
             var overlays = Directory.GetFiles(".\\pix", "*1.*");
             foreach (var overlay in overlays)
             {
                 string filename = Path.GetFileName(overlay);
-                filenames.Add(overlay, filename.Substring(0, filename.LastIndexOf('.') - 1));
+                filenames.Add(overlay, filename[..(filename.LastIndexOf('.') - 1)]);
             }
             return filenames;
         }
@@ -265,8 +268,8 @@ namespace PPS
         {
             var combo = (ComboBox)sender;
             string oldTitle = combo.Parent.Text;
-            string prefix = oldTitle.Contains("|")
-                ? oldTitle.Substring(0, oldTitle.IndexOf("|"))
+            string prefix = oldTitle.Contains('|')
+                ? oldTitle[..oldTitle.IndexOf(_separator)]
                 : oldTitle;
             combo.Parent.Text = prefix + "|" + GetValidScreens()[(int)combo.SelectedValue];
         }
@@ -276,7 +279,7 @@ namespace PPS
             ShowImageFromCombo((ComboBox)sender);
         }
 
-        private void ShowImageFromCombo(ComboBox combo, int playerNumber = 1)
+        private static void ShowImageFromCombo(ComboBox combo, int playerNumber = 1)
         {
             var pictureBox = combo.Parent.Controls.OfType<PictureBox>().First();
             var filename = (string)combo.SelectedValue;
@@ -305,7 +308,7 @@ namespace PPS
                     "One final step: You have to modify a few lines in PinballX.INI. Because we don't never ever want to " +
                     "mess up your pinballX-Configuration we don't do this automatically. " +
                     "Please copy and paste the following lines yourself to the \"[PinballFX3]\" segment into the PinbalX.ini:",
-                    
+
                    $"WorkingPath={AppDomain.CurrentDomain.BaseDirectory}\r\n" +
                     "Executable = PPS.exe\r\n" +
                     "Parameters =[TABLEFILE]\r\n"
@@ -315,7 +318,7 @@ namespace PPS
             }
             catch (Exception ex)
             {
-                MessageBox.Show( ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -330,15 +333,15 @@ namespace PPS
                 PlayField = playfield
             };
 
-            _configValues.Overlays = new List<OverlayGroup>
-            {
+            _configValues.Overlays =
+            [
                 new OverlayGroup
                 {
-                     PlayField=GetOverlayConfigFromUi("Display"),
-                      BackGlass=GetOverlayConfigFromUi("BackGlass"),
-                       Dmd=GetOverlayConfigFromUi("DMD")
+                    PlayField = GetOverlayConfigFromUi("Display"),
+                    BackGlass = GetOverlayConfigFromUi("BackGlass"),
+                    Dmd = GetOverlayConfigFromUi("DMD")
                 }
-            };
+            ];
         }
 
         private void SaveConfig()
@@ -390,7 +393,7 @@ namespace PPS
             TrackbarToLabel(sender, "HeightLabel");
         }
 
-        private void TrackbarToLabel(object sender, string labelTag)
+        private static void TrackbarToLabel(object sender, string labelTag)
         {
             var trackbar = (TrackBar)sender;
             var parent = trackbar.Parent;

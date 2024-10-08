@@ -20,12 +20,15 @@ namespace PPS
         }
 
         private readonly ILogger _logger;
-        private readonly ConfigValues _config;
+
+        public Backgrounds(ILogger logger)
+        {
+            _logger = logger;
+        }
 
         public Backgrounds()
         {
             _logger = LogManager.GetCurrentClassLogger();
-            _config = Config.Configuration;
         }
 
         private static void RotateImage(ref Image image, int degrees)
@@ -53,8 +56,6 @@ namespace PPS
                 OutputHelper.ShowMessage($"Screen {screen.Id} does not exist");
                 return;
             }
-
-//            form.WindowState = FormWindowState.Normal;
             var winScreen = System.Windows.Forms.Screen.AllScreens[screen.Id];
 
             form.Left = screen.X + winScreen.WorkingArea.Location.X;
@@ -80,7 +81,7 @@ namespace PPS
                 
                 var matches = Directory.GetFiles(imagePath, $"{tablename}.*");
                 string imageFileName;
-                if (matches.Any())
+                if (matches.Length != 0)
                 {
                     imageFileName = Path.Combine(imagePath, matches.First());
                 }
@@ -130,12 +131,10 @@ namespace PPS
                 return;
             }
 
-            var player = form.Controls.OfType<PictureBox>().FirstOrDefault(q => q.Tag.Equals("Player"));
-            if (player == null) throw new Exception("PictureBox not found");
-
+            var player = form.Controls.OfType<PictureBox>().FirstOrDefault(q => q.Tag.Equals("Player")) ?? throw new Exception("PictureBox not found");
             string pattern = $"{overlaySettings.Prefix}{currentNumberOfPlayers}.*";
             var fileMatches = Directory.GetFiles(".\\pix", pattern);
-            if (!fileMatches.Any())
+            if (fileMatches.Length == 0)
             {
                 OutputHelper.ShowMessage($"Cannot find any file with pattern '{pattern}'");
                 return;

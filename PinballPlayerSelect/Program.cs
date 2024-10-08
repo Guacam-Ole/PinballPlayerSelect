@@ -15,6 +15,7 @@ namespace PPS
         {
             AllocConsole();
             string tableName = null;
+            string emulator = null;
             if (args.Length == 0)
             {
                 OutputHelper.ShowMessage("No parameter found, running in testmode (open with \"PinballPlayerSelect <tablename>\" for normal operation)");
@@ -27,14 +28,14 @@ namespace PPS
             }
             else
             {
-                tableName = args[0];
+                emulator = args[0];
+                tableName = args[1];
             }
 
-            Console.WriteLine("Program started with table " + tableName);
+            Console.WriteLine($"Program started with table '{tableName}' on Emulator '{emulator}'" );
             try
             {
-                new Config().ReadConfig();
-                var config = Config.Configuration;
+                var config=Config.ReadConfig();
 
                 Application.SetHighDpiMode(HighDpiMode.SystemAware);
                 Application.EnableVisualStyles();
@@ -45,7 +46,7 @@ namespace PPS
 
                 var display = specificDisplay ?? genericDisplay;
 
-                Application.Run(new Launcher(tableName, display));
+                Application.Run(new Launcher(config, emulator, tableName, display));
             }
             catch (Exception ex)
             {
