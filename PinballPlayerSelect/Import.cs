@@ -1,22 +1,34 @@
-﻿using IniParser.Model;
+﻿using IniParser;
+using IniParser.Model;
 
 using Newtonsoft.Json;
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 
 namespace PPS
 {
     public partial class Import : Form
     {
+        private const string _PinballFXSteamId = "2328760";
+        private const string _PinballMSteamId = "2337640";
+        private const string _tagOverlay = "Overlay";
+        private const string _tagScreen = "Screen";
+        private const string _fx3Section = "PinballFX3";
         private const string _separator = "|";
+        private KeyDataCollection _pinballFx = null;
+        private KeyDataCollection _pinballM = null;
+        private KeyDataCollection _pinballFx3 = null;
         private ConfigValues _configValues;
         private readonly Timer _previewTimer = new() { Interval = 2400 };
         private readonly Random _random = new();
+        private IniData _iniData;
 
         public Import()
         {
@@ -28,7 +40,7 @@ namespace PPS
         private void _previewTimer_Tick(object sender, EventArgs e)
         {
             int numPlayers = _random.Next(4) + 1;
-            foreach (var group in GetGroupsByParentTag("Overlays"))
+            foreach (var group in GetGroupsByParentTag(_tagOverlay))
             {
                 var combo = group.Controls.OfType<ComboBox>().First(q => q.Tag.Equals("OverlayStyle"));
                 ShowImageFromCombo(combo, numPlayers);
@@ -38,7 +50,8 @@ namespace PPS
         private void pbxBrowse_Click(object sender, EventArgs e)
         {
             VerifyExePath.Enabled = false;
-            var pbxDialog = new OpenFileDialog { CheckFileExists = true, CheckPathExists = true, Filter = "PinballX Executable|pinballX.exe" };
+
+            var pbxDialog = new OpenFileDialog { CheckFileExists = !Debugger.IsAttached, CheckPathExists = true, Filter = "PinballX Executable|pinballX.exe" };
             var selectedPbx = pbxDialog.ShowDialog();
 
             if (selectedPbx == DialogResult.OK)
@@ -48,16 +61,19 @@ namespace PPS
             }
         }
 
+        private string GetIniFilePath()
+        {
+            string pbxPath = Path.GetDirectoryName(pbxInput.Text);
+            return Path.Combine(pbxPath, "Config");
+        }
+
         private void VerifyExePath_Click(object sender, EventArgs e)
         {
             try
             {
-                string pbxPath = Path.GetDirectoryName(pbxInput.Text);
-                ParseIni(Path.Combine(pbxPath, "Config", "PinballX.ini"));
-                SetPaths(pbxPath);
-                Screens.Enabled = true;
+                ParseIni(Path.Combine(GetIniFilePath(), "PinballX.ini"));
+                Screen.Enabled = true;
                 Overlays.Enabled = true;
-                Subs.Enabled = true;
                 WriteConfig.Enabled = true;
                 SetDefaultOverlay();
 
@@ -65,15 +81,8 @@ namespace PPS
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Sorry, your Silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-        }
-
-        private void SetPaths(string rootpath)
-        {
-            PathBackglass.Text = Path.Combine(rootpath, "Media", "Pinball FX3", "Backglass Images");
-            PathDmd.Text = Path.Combine(rootpath, "Media", "Pinball FX3", "DMD Images");
-            PathPlayfield.Text = Path.Combine(rootpath, "Media", "Pinball FX3", "Table Images");
         }
 
         private static Screen GetScreenFromIni(KeyDataCollection data, string prefix = null)
@@ -81,7 +90,7 @@ namespace PPS
             int id = data.IntParse("Monitor");
             if (id + 1 > System.Windows.Forms.Screen.AllScreens.Length)
             {
-                MessageBox.Show($"Screenid {id} does not exist");
+                MessageBox.Show($"ScreenId '{id}' does not exist");
                 id = System.Windows.Forms.Screen.AllScreens.Length - 1;
             }
 
@@ -113,30 +122,72 @@ namespace PPS
             return screen.WorkingArea.Width == width && screen.WorkingArea.Height == height;
         }
 
+        private void AddToEmulatorIfConfigExists(List<Emulator> emulators, string emulatorName, KeyDataCollection iniContents)
+        {
+            if (iniContents == null) return;
+            if (iniContents["Executable"] == "PPS.exe")
+            {
+                MessageBox.Show("Ini has already been modified (I found pps.exe there)");
+                this.Close();
+                return;
+            }
+            emulators.Add(new Emulator
+            {
+                Name = emulatorName,
+                SectionName = iniContents["Section"],
+                Executable = iniContents["Executable"],
+                WorkingPath = iniContents["WorkingPath"],
+                Media = new Media
+                {
+                    Root = Path.GetDirectoryName(pbxInput.Text)
+                }
+            });
+        }
+
         private void ParseIni(string filename)
         {
-            var parser = new IniParser.Parser.IniDataParser();
-            var iniData = parser.Parse(File.ReadAllText(filename));
-            var fx3 = iniData["PinballFX3"];
-            var input = iniData["KeyCodes"];
+            var parser = new FileIniDataParser();
+            _iniData = parser.ReadFile(filename);
+
+            if (_iniData.Sections.Any(q => q.SectionName == _fx3Section))
+            {
+                _pinballFx3 = _iniData[_fx3Section];
+                _pinballFx3["Section"] = _fx3Section;
+            }
+
+            var input = _iniData["KeyCodes"];
+
+            for (int sectionCount = 1; sectionCount < 10; sectionCount++)
+            {
+                string sectionName = $"System_{sectionCount}";
+                var systemSection = _iniData.Sections.FirstOrDefault(q => q.SectionName == sectionName);
+                if (systemSection == null) continue;
+                if (systemSection.Keys.ContainsKey("Parameters"))
+                {
+                    var parameters = _iniData[sectionName]["Parameters"];
+                    if (parameters.Contains(_PinballFXSteamId))
+                    {
+                        _pinballFx = _iniData[sectionName];
+                        _pinballFx["Section"] = sectionName;
+                    }
+                    if (parameters.Contains(_PinballMSteamId))
+                    {
+                        _pinballM = _iniData[sectionName];
+                        _pinballM["Section"] = sectionName;
+                    }
+                }
+            }
+
+            var emulators = new List<Emulator>();
+            AddToEmulatorIfConfigExists(emulators, "PinballFX3", _pinballFx3);
+            AddToEmulatorIfConfigExists(emulators, "PinballFX", _pinballFx);
+            AddToEmulatorIfConfigExists(emulators, "PinballM", _pinballM);
 
             _configValues = new ConfigValues()
             {
                 BatchMode = false,
                 StayOpen = false,
-                Emulators =
-                [
-                    new()
-                    {
-                        Executable = fx3["Executable"],
-                        Parameters = fx3["Parameters"] + " [PLAYER]",
-                        WorkingPath = fx3["WorkingPath"],
-                        Media = new Media
-                        {
-                            Root = Path.GetDirectoryName(pbxInput.Text)
-                        }
-                    }
-                ],
+                Emulators = emulators,
                 Input = new Input
                 {
                     Exit = input.IntParse("quit"),
@@ -148,9 +199,7 @@ namespace PPS
                 },
             };
 
-            SetScreenPropertiesFromIni(iniData, "Display", "Window");
-            SetScreenPropertiesFromIni(iniData, "DMD");
-            SetScreenPropertiesFromIni(iniData, "BackGlass");
+            SetScreenPropertiesFromIni(_iniData, "DMD");
         }
 
         private void SetDefaultOverlay()
@@ -209,12 +258,12 @@ namespace PPS
 
         private GroupBox GetScreenGroup(string screen)
         {
-            return GetSubGroup("Screens", screen);
+            return GetSubGroup(_tagScreen, screen);
         }
 
         private GroupBox GetOverlayGroup(string overlay)
         {
-            return GetSubGroup("Overlays", overlay);
+            return GetSubGroup(_tagOverlay, overlay);
         }
 
         private GroupBox GetSubGroup(string parentTag, string subTag)
@@ -224,21 +273,18 @@ namespace PPS
 
         private void FillComboValues()
         {
-            var screens = GetGroupsByParentTag("Screens");
-            var overlays = GetGroupsByParentTag("Overlays");
+            var screen = GetGroupsByParentTag(_tagScreen).First();
+            var overlay = GetGroupsByParentTag(_tagOverlay).First();
 
-            foreach (var screen in screens)
-            {
-                var combo = screen.Controls.OfType<ComboBox>().First(q => q.Tag.Equals("ScreenId"));
-                combo.Items.Clear();
-                combo.DataSource = GetValidScreens().ToList();
-            }
-            foreach (var overlay in overlays)
-            {
-                var combo = overlay.Controls.OfType<ComboBox>().First(q => q.Tag.Equals("OverlayStyle"));
-                combo.Items.Clear();
-                combo.DataSource = GetValidOverlays().ToList();
-            }
+            SetDataSource(screen, "ScreenId", GetValidScreens());
+            SetDataSource(overlay, "OverlayStyle", GetValidOverlays());
+        }
+
+        private static void SetDataSource<T>(GroupBox groupBox, string tag, Dictionary<T, string> dataSource)
+        {
+            var combo = groupBox.Controls.OfType<ComboBox>().First(q => q.Tag.Equals(tag));
+            combo.Items.Clear();
+            combo.DataSource = dataSource.ToList();
         }
 
         private static Dictionary<int, string> GetValidScreens()
@@ -295,24 +341,27 @@ namespace PPS
         {
             try
             {
-                if (MessageBox.Show("Warning! Your configfile (config.json) will be overwritten. Make sure you have a backup. Continue?", "Writing Config", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                if (MessageBox.Show("Warning! Your configfile (config.json) and the PinballX.Ini will be overwritten. Make sure you have a backup. Continue?", "Writing Config", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;
                 }
 
                 FinishConfig();
                 SaveConfig();
+                SaveIni();
 
-                new DisplayText(
-                    "Copy this stuff!",
-                    "One final step: You have to modify a few lines in PinballX.INI. Because we don't never ever want to " +
-                    "mess up your pinballX-Configuration we don't do this automatically. " +
-                    "Please copy and paste the following lines yourself to the \"[PinballFX3]\" segment into the PinbalX.ini:",
+                MessageBox.Show("Everything should work now. A backup has been created");
 
-                   $"WorkingPath={AppDomain.CurrentDomain.BaseDirectory}\r\n" +
-                    "Executable = PPS.exe\r\n" +
-                    "Parameters =[TABLEFILE]\r\n"
-                    ).ShowDialog();
+                //new DisplayText(
+                //    "Done",
+                //    "One final step: You have to modify a few lines in PinballX.INI. Because we don't never ever want to " +
+                //    "mess up your pinballX-Configuration we don't do this automatically. " +
+                //    "Please copy and paste the following lines yourself to the \"[PinballFX3]\" segment into the PinballX.ini:",
+
+                //   $"WorkingPath={AppDomain.CurrentDomain.BaseDirectory}\r\n" +
+                //    "Executable = PPS.exe\r\n" +
+                //    "Parameters =fx3 [TABLEFILE] <existing parameters> \r\n"
+                //    ).ShowDialog();
 
                 Close();
             }
@@ -324,30 +373,37 @@ namespace PPS
 
         private void FinishConfig()
         {
-            var playfield = GetScreenConfigFromUi("Display");
-            playfield.Enabled = false;  // Is overlayed by PinballX
-            _configValues.Screens = new Screens
-            {
-                BackGlass = GetScreenConfigFromUi("BackGlass"),
-                Dmd = GetScreenConfigFromUi("DMD"),
-                PlayField = playfield
-            };
-
-            _configValues.Overlays =
-            [
-                new OverlayGroup
-                {
-                    PlayField = GetOverlayConfigFromUi("Display"),
-                    BackGlass = GetOverlayConfigFromUi("BackGlass"),
-                    Dmd = GetOverlayConfigFromUi("DMD")
-                }
-            ];
+            _configValues.Dmd = GetScreenConfigFromUi("DMD");
+            _configValues.Overlays = [GetOverlayConfigFromUi("DMD")];
         }
 
         private void SaveConfig()
         {
+            if (File.Exists("config.json")) File.Copy("config.json", $"config.backup-{DateTime.Now.ToFileTime()}.json");
             var configContents = JsonConvert.SerializeObject(_configValues, Formatting.Indented);
             File.WriteAllText("config.json", configContents);
+        }
+
+        private void SaveIni()
+        {
+            var iniFilePath = Path.Combine(GetIniFilePath(), "PinballX.ini");
+            File.Copy(iniFilePath, Path.Combine(GetIniFilePath(), $"PinballX.backup-{DateTime.Now.ToFileTime()}.ini"));
+            foreach (var emulator in _configValues.Emulators)
+            {
+                var emulatorIni = _iniData[emulator.SectionName];
+                emulatorIni["WorkingPath"] = AppDomain.CurrentDomain.BaseDirectory;
+                emulatorIni["Executable"] = "PPS.exe";
+                emulatorIni["Parameters"] = $"{emulator.Name} [TABLENAME] {emulatorIni["Parameters"]}";
+            }
+            var streamIniParser = new StreamIniDataParser();
+            using var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream))
+            {
+                streamIniParser.WriteData(streamWriter, _iniData);
+            }
+            var fixedIniContents = Encoding.ASCII.GetString(memoryStream.ToArray());
+            fixedIniContents = fixedIniContents.Replace(" = ", "=");
+            File.WriteAllText(iniFilePath, fixedIniContents);
         }
 
         private Overlay GetOverlayConfigFromUi(string tag)
@@ -370,7 +426,6 @@ namespace PPS
             return new Screen
             {
                 Background = true,
-                Enabled = true,
                 Id = (int)((ComboBox)controls["ScreenId"]).SelectedValue,
 
                 X = int.Parse(controls["ScreenX"].Text),

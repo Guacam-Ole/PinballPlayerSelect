@@ -59,7 +59,7 @@
     {
       "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX3",
       "executable": "Pinball FX3.exe",
-      "parameters": "-applaunch 442120 -table_[TABLEFILE] -offline [PLAYER]",
+      "additionalparameters": "-applaunch 442120 -table_[TABLEFILE] -offline [PLAYER]",
 
       "TwoPlayers": "-hotseat_2",
       "ThreePlayers": "-hotseat_3",
@@ -72,7 +72,7 @@
       "name": "fx",
       "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX",
       "executable": "PinballFX.exe",
-      "parameters": "-applaunch 2328760 -table [TABLEFILE] [PLAYER] -offline",
+      "additionalparameters": "-applaunch 2328760 -table [TABLEFILE] [PLAYER] -offline",
 
       "TwoPlayers": "-hotseat_2",
       "ThreePlayers": "-hotseat_3",

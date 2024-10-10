@@ -6,8 +6,8 @@
         {
             
             var content = data[$"{prefix}{key}"];
-            if (content == null) content= data[$"{prefix}{key.ToLower()}"];
-            int .TryParse(content, out int value);
+            content??= data[$"{prefix}{key.ToLower()}"];
+            _ = int.TryParse(content, out int value);
             return value;
         }
     }

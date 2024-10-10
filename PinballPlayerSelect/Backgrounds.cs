@@ -50,7 +50,7 @@ namespace PPS
         }
 
         public static void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
-       {
+        {
             if (System.Windows.Forms.Screen.AllScreens.Length < screen.Id + 1)
             {
                 OutputHelper.ShowMessage($"Screen {screen.Id} does not exist");
@@ -78,7 +78,7 @@ namespace PPS
                     OutputHelper.ShowMessage($"Cannot open path {imagePath}");
                     return;
                 }
-                
+
                 var matches = Directory.GetFiles(imagePath, $"{tablename}.*");
                 string imageFileName;
                 if (matches.Length != 0)
@@ -97,7 +97,6 @@ namespace PPS
                 }
                 form.BackgroundImage = image;
             }
-        
         }
 
         private static Image Resize(Image image, int width, int height)

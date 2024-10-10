@@ -4,20 +4,12 @@ namespace PPS
 {
     public class ConfigValues
     {
-        public Screens Screens { get; set; }
+        public Screen Dmd{ get; set; }
         public Input Input { get; set; }
         public List<Emulator> Emulators { get; set; }
-        public List<OverlayGroup> Overlays { get; set; }
+        public List<Overlay> Overlays { get; set; }
         public bool StayOpen { get; set; } = false;
         public bool BatchMode { get; set; } = false;
-    }
-
-    public class OverlayGroup
-    {
-        public string Filter { get; set; }
-        public Overlay BackGlass { get; set; }
-        public Overlay Dmd { get; set; }
-        public Overlay PlayField { get; set; }
     }
 
     public class Input
@@ -27,8 +19,8 @@ namespace PPS
         public int MorePlayers { get; set; }
         public int LessPlayers { get; set; }
         public bool Loop { get; set; } = true;
-        public int OnePlayer { get; set; }  // Directly start as 1 Player Game
-        public int TwoPlayers { get; set; } // Directly start as 2 Player Game
+        public int OnePlayer { get; set; }  
+        public int TwoPlayers { get; set; } 
         public int ThreePlayers { get; set; }
         public int FourPlayers { get; set; }
         public int PlayerCountAtStart { get; set; } = 1;
@@ -36,10 +28,10 @@ namespace PPS
 
     public class Emulator
     {
+        public string SectionName { get; set; }
         public string Name { get; set; }
         public string WorkingPath { get; set; }
         public string Executable { get; set; }
-        public string Parameters { get; set; }
         public string OnePlayer { get; set; }
         public string TwoPlayers { get; set; }
         public string ThreePlayers { get; set; }
@@ -49,6 +41,7 @@ namespace PPS
 
     public class Overlay
     {
+        public string Filter { get; set; }
         public string Prefix { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
@@ -62,12 +55,7 @@ namespace PPS
         public string Dmd { get; set; }
     }
 
-    public class Screens
-    {
-        public Screen PlayField { get; set; } = new Screen() { Enabled = false };
-        public Screen BackGlass { get; set; } = new Screen() { Enabled = false };
-        public Screen Dmd { get; set; } = new Screen() { Enabled = false };
-    }
+
 
     public class Screen
     {
@@ -78,7 +66,6 @@ namespace PPS
         public int X { get; set; }
         public int Y { get; set; }
         public int OverlayRotate { get; set; }
-        public bool Enabled { get; set; } = true;
         public bool Background { get; set; } = true;
         public bool OnTop { get; set; } = false;
     }

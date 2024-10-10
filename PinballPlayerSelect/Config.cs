@@ -23,8 +23,8 @@ namespace PPS
             // Set Paths using default PinballX-Config if not specified otherwise:
             foreach (var emulator in configuration.Emulators)
             {
-                emulator.Media.BackGlass = AddPaths(emulator.Media.Root, emulator.Media.BackGlass, "Backglass");
-                emulator.Media.PlayField = AddPaths(emulator.Media.Root, emulator.Media.PlayField, "Table");
+                //emulator.Media.BackGlass = AddPaths(emulator.Media.Root, emulator.Media.BackGlass, "Backglass");
+                //emulator.Media.PlayField = AddPaths(emulator.Media.Root, emulator.Media.PlayField, "Table");
                 emulator.Media.Dmd = AddPaths(emulator.Media.Root, emulator.Media.Dmd, "DMD");
             }
             return configuration;

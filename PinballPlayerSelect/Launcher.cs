@@ -14,56 +14,55 @@ namespace PPS
         private static extern short GetAsyncKeyState(Keys key);
 
         private readonly ConfigValues _config;
-        private readonly Emulator _emulator;
         private readonly string _tableName;
-        private readonly OverlayGroup _overlay;
-        private int _numPlayers;
-        private Monitor _playfield;
+        private readonly Emulator _emulator;
+        private readonly Overlay _overlay;
+        private readonly string _gameParameters;
         private Monitor _dmd;
-        private Monitor _backglass;
+        private int _numPlayers;
+
+        public bool RunInTestMode { get; set; }
 
         public Launcher()
         {
             InitializeComponent();
         }
 
-        public Launcher(ConfigValues config, string emulator, string tableName, OverlayGroup overlaysettings) : this()
+        public Launcher(ConfigValues config, string emulator, string tableName, string parameters, Overlay overlaySettings) : this()
         {
             _config = config;
-            _emulator = _config.Emulators.FirstOrDefault(q => q.Name == emulator) ?? throw new ArgumentException($"'{emulator}' is not configured. Please be aware that this is case-sensitive");
             _tableName = tableName;
-            _overlay = overlaysettings;
+            _emulator = _config.Emulators.FirstOrDefault(q => q.Name == emulator) ?? throw new ArgumentException($"'{emulator}' is not configured. Please be aware that this is case-sensitive");
+            _overlay = overlaySettings;
             _numPlayers = config.Input.PlayerCountAtStart;
+            _gameParameters = parameters;
             Size = new Size(0, 0);
         }
 
         private void Launcher_Load(object sender, EventArgs e)
         {
-            if (_config.Screens.PlayField.Enabled)
-            {
-                _playfield = new Monitor( _config.Screens.PlayField, _overlay.PlayField, _tableName, _emulator.Media.PlayField, "playfield");
-                _playfield.KeyPressed += _screenKeydown;
-                _playfield.Show();
-            }
-            if (_config.Screens.Dmd.Enabled)
-            {
-                _dmd = new Monitor( _config.Screens.Dmd, _overlay.Dmd, _tableName, _emulator.Media.Dmd, "dmd");
+            //if (_config.Screens.PlayField.Enabled)
+            //{
+            //    _playfield = new Monitor(_config.Screens.PlayField, _overlay.PlayField, _tableName, _emulator.Media.PlayField, "playfield");
+            //    _playfield.KeyPressed += _screenKeydown;
+            //    _playfield.Show();
+            //}
+                _dmd = new Monitor(_config.Dmd, _overlay, _tableName, _emulator.Media.Dmd, "dmd");
                 _dmd.KeyPressed += _screenKeydown;
                 _dmd.Show();
-            }
-            if (_config.Screens.BackGlass.Enabled)
-            {
-                _backglass = new Monitor( _config.Screens.BackGlass, _overlay.BackGlass, _tableName, _emulator.Media.BackGlass, "backglass");
-                _backglass.KeyPressed += _screenKeydown;
-                _backglass.Show();
-            }
+            //if (_config.Screens.BackGlass.Enabled)
+            //{
+            //    _backglass = new Monitor(_config.Screens.BackGlass, _overlay.BackGlass, _tableName, _emulator.Media.BackGlass, "backglass");
+            //    _backglass.KeyPressed += _screenKeydown;
+            //    _backglass.Show();
+            //}
         }
 
         private void RedrawPlayerSelect()
         {
-            _playfield?.RedrawSelection(_numPlayers);
+          //  _playfield?.RedrawSelection(_numPlayers);
             _dmd?.RedrawSelection(_numPlayers);
-            _backglass?.RedrawSelection(_numPlayers);
+            //_backglass?.RedrawSelection(_numPlayers);
         }
 
         private void ExitProgram()
@@ -74,26 +73,29 @@ namespace PPS
         private void LaunchGame()
         {
             string target = Path.Combine(_emulator.WorkingPath, _emulator.Executable);
-            string parameters = _emulator.Parameters.Replace("[TABLEFILE]", _tableName) + " ";
+            string parameters = _gameParameters;
+         
+            parameters += " ";
+
             switch (_numPlayers)
             {
                 case 1:
-                    parameters = parameters.Replace("[PLAYER]", _emulator.OnePlayer);
+                    parameters = parameters += _emulator.OnePlayer;
                     break;
 
                 case 2:
-                    parameters = parameters.Replace("[PLAYER]", _emulator.TwoPlayers);
+                    parameters = parameters += _emulator.TwoPlayers;
                     break;
 
                 case 3:
-                    parameters = parameters.Replace("[PLAYER]", _emulator.ThreePlayers);
+                    parameters = parameters += _emulator.ThreePlayers;
                     break;
 
                 case 4:
-                    parameters = parameters.Replace("[PLAYER]", _emulator.FourPlayers);
+                    parameters = parameters += _emulator.FourPlayers;
                     break;
             }
-            if (_tableName == "test")
+            if (RunInTestMode)
             {
                 OutputHelper.ShowMessage($"[TEST] The following Command would be run: {target} {parameters}");
             }
