@@ -36,26 +36,16 @@ namespace PPS
         public string TwoPlayers { get; set; }
         public string ThreePlayers { get; set; }
         public string FourPlayers { get; set; }
-        public Media Media { get; set; }
+        public string Media { get; set; }
     }
 
     public class Overlay
     {
         public string Filter { get; set; }
         public string Prefix { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public int Width { get; set; } = 100;
+        public int Height { get; set; } = 100;
     }
-
-    public class Media
-    {
-        public string Root { get; set; }
-        public string PlayField { get; set; }
-        public string BackGlass { get; set; }
-        public string Dmd { get; set; }
-    }
-
-
 
     public class Screen
     {

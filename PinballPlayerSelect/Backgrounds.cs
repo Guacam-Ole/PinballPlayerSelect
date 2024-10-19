@@ -1,4 +1,4 @@
-﻿using NLog;
+﻿using Microsoft.Extensions.Logging;
 
 using System;
 using System.Drawing;
@@ -12,23 +12,15 @@ namespace PPS
 {
     public class Backgrounds
     {
-        public enum Screens
-        {
-            Dmd,
-            Backglass,
-            Playfield
-        }
+        private readonly ILogger<Backgrounds> _logger;
 
-        private readonly ILogger _logger;
-
-        public Backgrounds(ILogger logger)
+        public Backgrounds(ILogger<Backgrounds> logger) : this()
         {
             _logger = logger;
         }
 
         public Backgrounds()
         {
-            _logger = LogManager.GetCurrentClassLogger();
         }
 
         private static void RotateImage(ref Image image, int degrees)
@@ -49,11 +41,11 @@ namespace PPS
             }
         }
 
-        public static void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
+        public void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
         {
             if (System.Windows.Forms.Screen.AllScreens.Length < screen.Id + 1)
             {
-                OutputHelper.ShowMessage($"Screen {screen.Id} does not exist");
+                _logger.LogWarning("Cannot paint BackgroundImage because Screen '{screenId}' does not exist", screen.Id);
                 return;
             }
             var winScreen = System.Windows.Forms.Screen.AllScreens[screen.Id];
@@ -75,7 +67,7 @@ namespace PPS
             {
                 if (!Directory.Exists(imagePath))
                 {
-                    OutputHelper.ShowMessage($"Cannot open path {imagePath}");
+                    _logger.LogWarning("Cannot paint BackgroundImage because Cannot open path '{ImagePath}'", imagePath);
                     return;
                 }
 
@@ -83,10 +75,12 @@ namespace PPS
                 string imageFileName;
                 if (matches.Length != 0)
                 {
+                    _logger.LogDebug("Matching Image for table found: '{path}'", imagePath);
                     imageFileName = Path.Combine(imagePath, matches.First());
                 }
                 else
                 {
+                    _logger.LogWarning("No matching Image for table found. Using default instead");
                     imageFileName = $"pix\\missing_{form.Tag}.png";
                 }
 
@@ -101,12 +95,12 @@ namespace PPS
 
         private static Image Resize(Image image, int width, int height)
         {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
+            var destinationRectangle = new Rectangle(0, 0, width, height);
+            var destinationImage = new Bitmap(width, height);
 
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
+            destinationImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
 
-            using (var graphics = Graphics.FromImage(destImage))
+            using (var graphics = Graphics.FromImage(destinationImage))
             {
                 graphics.CompositingMode = CompositingMode.SourceCopy;
                 graphics.CompositingQuality = CompositingQuality.HighQuality;
@@ -116,17 +110,17 @@ namespace PPS
 
                 using var wrapMode = new ImageAttributes();
                 wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
+                graphics.DrawImage(image, destinationRectangle, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
             }
 
-            return destImage;
+            return destinationImage;
         }
 
         public void DisplaySelection(Form form, Screen screensettings, Overlay overlaySettings, int currentNumberOfPlayers = 1)
         {
             if (overlaySettings?.Prefix == null)
             {
-                _logger.Log(LogLevel.Debug, $"No selection on this display for this table");
+                _logger.LogDebug("No selection on this display for this table");
                 return;
             }
 
@@ -135,7 +129,7 @@ namespace PPS
             var fileMatches = Directory.GetFiles(".\\pix", pattern);
             if (fileMatches.Length == 0)
             {
-                OutputHelper.ShowMessage($"Cannot find any file with pattern '{pattern}'");
+                _logger.LogError("Cannot find any file with pattern '{Pattern}'", pattern);
                 return;
             }
 

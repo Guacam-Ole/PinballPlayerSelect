@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -6,15 +8,17 @@ namespace PPS
 {
     public partial class Monitor : Form
     {
-        private readonly Screen _screenSettings;
-        private readonly Overlay _overlaySettings;
-        private readonly string _tableName;
-        private readonly string _imagepath;
+        private Screen _screenSettings;
+        private Overlay _overlaySettings;
+        private string _tableName;
+        private string _imagePath;
+        private int _numberOfPlayers;
         private readonly Backgrounds _background;
 
         public event EventHandler<KeyEventArgs> KeyPressed;
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
+        private readonly ILogger<Monitor> _logger;
         private const UInt32 SWP_NOSIZE = 0x0001;
         private const UInt32 SWP_NOMOVE = 0x0002;
         private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
@@ -23,6 +27,11 @@ namespace PPS
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
+        public Monitor(ILogger<Monitor> logger) : this()
+        {
+            _logger = logger;
+        }
+
         public Monitor()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
@@ -30,40 +39,41 @@ namespace PPS
             _background = new Backgrounds();
         }
 
-        public Monitor(Screen pbxScreenSettings, Overlay overlaySettings, string tablename, string imagepath, string tag) : this()
-        {
-            _screenSettings = pbxScreenSettings;
-            _overlaySettings = overlaySettings;
-            _tableName = tablename;
-            _imagepath = imagepath;
-            Tag = tag;
-            Text = tag;
-        }
-
         private void OnTop()
         {
             SetWindowPos(this.Handle, HWND_TOPMOST, 0, 0, 0, 0, TOPMOST_FLAGS);
         }
 
+        public void ShowPlayerSelection(Screen screenSettings, Overlay overlaySettings, string tableName, string imagePath, int numberOfPlayers)
+        {
+            _screenSettings = screenSettings;
+            _overlaySettings = overlaySettings;
+            _tableName = tableName;
+            _imagePath = imagePath;
+            _numberOfPlayers = numberOfPlayers;
+            _logger.LogDebug("Showing PlayerSelection for Table '{Table}' ", tableName);
+        }
+
         private void Monitor_Load(object sender, EventArgs e)
         {
             if (_screenSettings.OnTop) OnTop();
-            Backgrounds.PaintBackgroundImage(this, _screenSettings, _imagepath, _tableName);
-            RedrawSelection(1);
+            _background.PaintBackgroundImage(this, _screenSettings, _imagePath, _tableName);
+            RedrawSelection(_numberOfPlayers);
             if (_tableName == "test") TestMode();
         }
 
         private void TestMode()
         {
+            _logger.LogInformation("Working in Testmode");
             this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
             coordsInfo.Visible = true;
             PlayerNum.Visible = false;
-            this.SizeChanged += ShowCoords;
-            this.Move += ShowCoords;
-            ShowCoords(null, null);
+            this.SizeChanged += ShowCoordinates;
+            this.Move += ShowCoordinates;
+            ShowCoordinates(null, null);
         }
 
-        private void ShowCoords(object sender, EventArgs e)
+        private void ShowCoordinates(object sender, EventArgs e)
         {
             string txt = $" X:{this.Left} Y:{this.Top} Width: {this.Width} Height: {this.Height}\n\nAvailable Screens:\n\n\n";
 
@@ -75,11 +85,13 @@ namespace PPS
                 counter++;
             }
             coordsInfo.Text = txt;
+            _logger.LogInformation("Coordinates:" + txt);
         }
 
         public void RedrawSelection(int numberOfPlayers)
         {
             _background.DisplaySelection(this, _screenSettings, _overlaySettings, numberOfPlayers);
+            _logger.LogInformation("Redrawn PlayerSelect with '{Count}' players", numberOfPlayers);
         }
 
         private void Monitor_KeyDown(object sender, KeyEventArgs e)

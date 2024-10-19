@@ -1,8 +1,8 @@
 {
   "profiles": {
     "PinballPlayerSelect": {
-      "commandName": "Project",
-      "commandLineArgs": "config"
+      "commandName": "Project", 
+      "commandLineArgs": "test fx 123 toll toll toll"
     }
   }
 }

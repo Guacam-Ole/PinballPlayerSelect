@@ -1,91 +1,70 @@
 {
-  "stayopen": true,
-  "screens": {
-    "playfield": {
-      "id": 0,
-      "rotate": 180,
-      "overlayrotate": 270,
-      "enabled": false
-    },
-    "dmd": {
-      "id": 2,
-      "rotate": 0,
-      "overlayrotate": 0,
-      "enabled": true,
-      "x": 0,
-      "y": 105,
-      "width": 1280,
-      "height": 460
-    },
-    "backglass": {
-      "id": 1,
-      "rotate": 0,
-      "overlayrotate": 0,
-      "enabled": true
-    }
+  "Dmd": {
+    "Id": 1,
+    "Rotate": 0,
+    "Width": 1280,
+    "Height": 460,
+    "X": 0,
+    "Y": 105,
+    "OverlayRotate": 0,
+    "Background": true,
+    "OnTop": false
   },
-  "overlays": [
-    {
-      // default
-      "DMD": {
-        "prefix": "indyhands",
-        "width": 100,
-        "height": 100
-      }
-    },
-    {
-      "filter": "WMS_Indiana_Jones",
-      "DMD": {
-        "prefix": "wisely",
-        "width": 100,
-        "height": 100
-      }
-    },
-    {
-      "filter": "FamilyGuy",
-      "backglass": {
-        "prefix": "turtlestrans",
-        "width": 50,
-        "height": 30
-      },
-      "DMD": {
-        "prefix": "indyhands",
-        "width": 100,
-        "height": 100
-      }
-    }
-  ],
-  "emulators": [
-    {
-      "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX3",
-      "executable": "Pinball FX3.exe",
-      "additionalparameters": "-applaunch 442120 -table_[TABLEFILE] -offline [PLAYER]",
-
-      "TwoPlayers": "-hotseat_2",
-      "ThreePlayers": "-hotseat_3",
-      "FourPlayers": "-hotseat_4",
-      "media": {
-        "root": "c:\\pinball\\PinballX\\Media\\Pinball FX3"
-      }
-    },
-    {
-      "name": "fx",
-      "workingPath": "C:\\pinball\\steam\\steamapps\\common\\Pinball FX",
-      "executable": "PinballFX.exe",
-      "additionalparameters": "-applaunch 2328760 -table [TABLEFILE] [PLAYER] -offline",
-
-      "TwoPlayers": "-hotseat_2",
-      "ThreePlayers": "-hotseat_3",
-      "FourPlayers": "-hotseat_4",
-      "media": {
-        "root": "c:\\pinball\\PinballX\\Media\\Pinball FX"
-      }
-    }
-  ],
   "Input": {
-    "exit": 81, // q
-    "startgame": 13, // Enter
-    "moreplayers": 161, // Right Shift
-    "lessplayers": 160 // Left Shift
-  }
+    "Exit": 81,
+    "StartGame": 13,
+    "MorePlayers": 161,
+    "LessPlayers": 160,
+    "Loop": true,
+    "OnePlayer": 0,
+    "TwoPlayers": 0,
+    "ThreePlayers": 0,
+    "FourPlayers": 0,
+    "PlayerCountAtStart": 1
+  },
+  "Emulators": [
+    {
+      "SectionName": "PinballFX3",
+      "Name": "PinballFX3",
+      "WorkingPath": "C:\\pinball\\steam",
+      "Executable": "steam.exe",
+      "OnePlayer": null,
+      "TwoPlayers": null,
+      "ThreePlayers": null,
+      "FourPlayers": null,
+      "Media": "E:\\PinballX"
+    },
+    {
+      "SectionName": "System_2",
+      "Name": "PinballFX",
+      "WorkingPath": "C:\\pinball\\steam",
+      "Executable": "steam.exe",
+      "OnePlayer": null,
+      "TwoPlayers": null,
+      "ThreePlayers": null,
+      "FourPlayers": null,
+      "Media": "E:\\PinballX"
+    },
+    {
+      "SectionName": "System_3",
+      "Name": "PinballM",
+      "WorkingPath": "C:\\pinball\\steam",
+      "Executable": "steam.exe",
+      "OnePlayer": null,
+      "TwoPlayers": null,
+      "ThreePlayers": null,
+      "FourPlayers": null,
+      "Media": "E:\\PinballX"
+    }
+  ],
+  "Overlays": [
+    {
+      "Filter": null,
+      "Prefix": "indyhands",
+      "Width": 100,
+      "Height": 100
+    }
+  ],
+  "StayOpen": false,
+  "BatchMode": false
 }

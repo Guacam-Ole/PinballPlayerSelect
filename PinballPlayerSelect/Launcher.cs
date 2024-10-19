@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
@@ -13,60 +15,61 @@ namespace PPS
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(Keys key);
 
-        private readonly ConfigValues _config;
-        private readonly string _tableName;
-        private readonly Emulator _emulator;
-        private readonly Overlay _overlay;
-        private readonly string _gameParameters;
+        private ConfigValues _config;
+        private Emulator _emulator;
+
+        private Overlay _overlay;
+        private string _gameParameters;
         private Monitor _dmd;
         private int _numPlayers;
+        private readonly ILogger<Launcher> _logger;
 
         public bool RunInTestMode { get; set; }
+
+        public Launcher(ILogger<Launcher> logger, Monitor dmd) : this()
+        {
+            _logger = logger;
+            _dmd = dmd;
+        }
 
         public Launcher()
         {
             InitializeComponent();
         }
 
-        public Launcher(ConfigValues config, string emulator, string tableName, string parameters, Overlay overlaySettings) : this()
+        public void Init(ConfigValues config, string emulator, string tableName, string parameters, Overlay overlaySettings)
         {
             _config = config;
-            _tableName = tableName;
             _emulator = _config.Emulators.FirstOrDefault(q => q.Name == emulator) ?? throw new ArgumentException($"'{emulator}' is not configured. Please be aware that this is case-sensitive");
             _overlay = overlaySettings;
             _numPlayers = config.Input.PlayerCountAtStart;
             _gameParameters = parameters;
             Size = new Size(0, 0);
+            DrawDmd(tableName);
+            _logger.LogInformation("Initialized launcher with configuration for '{emulator}' and table '{Table}' with parameters '{Parameters}'", emulator, tableName, parameters);
+            _logger.LogDebug("config: {Config}", config);
+            _logger.LogDebug("overlay: {Overlay}", overlaySettings);
+        }
+
+        private void DrawDmd(string tableName)
+        {
+            _dmd.KeyPressed += _screenKeydown;
+            _dmd.ShowPlayerSelection(_config.Dmd, _overlay, tableName, _emulator.Media, _numPlayers);
         }
 
         private void Launcher_Load(object sender, EventArgs e)
         {
-            //if (_config.Screens.PlayField.Enabled)
-            //{
-            //    _playfield = new Monitor(_config.Screens.PlayField, _overlay.PlayField, _tableName, _emulator.Media.PlayField, "playfield");
-            //    _playfield.KeyPressed += _screenKeydown;
-            //    _playfield.Show();
-            //}
-                _dmd = new Monitor(_config.Dmd, _overlay, _tableName, _emulator.Media.Dmd, "dmd");
-                _dmd.KeyPressed += _screenKeydown;
-                _dmd.Show();
-            //if (_config.Screens.BackGlass.Enabled)
-            //{
-            //    _backglass = new Monitor(_config.Screens.BackGlass, _overlay.BackGlass, _tableName, _emulator.Media.BackGlass, "backglass");
-            //    _backglass.KeyPressed += _screenKeydown;
-            //    _backglass.Show();
-            //}
+            _dmd.Show();
         }
 
         private void RedrawPlayerSelect()
         {
-          //  _playfield?.RedrawSelection(_numPlayers);
             _dmd?.RedrawSelection(_numPlayers);
-            //_backglass?.RedrawSelection(_numPlayers);
         }
 
         private void ExitProgram()
         {
+            _logger.LogDebug("Exiting program");
             Close();
         }
 
@@ -74,7 +77,7 @@ namespace PPS
         {
             string target = Path.Combine(_emulator.WorkingPath, _emulator.Executable);
             string parameters = _gameParameters;
-         
+
             parameters += " ";
 
             switch (_numPlayers)
@@ -95,6 +98,7 @@ namespace PPS
                     parameters = parameters += _emulator.FourPlayers;
                     break;
             }
+            _logger.LogInformation("Launching '{Game}' with parameters '{Parameters}'", target, parameters);
             if (RunInTestMode)
             {
                 OutputHelper.ShowMessage($"[TEST] The following Command would be run: {target} {parameters}");
@@ -118,10 +122,11 @@ namespace PPS
                     if (processInfo != null && !processInfo.HasExited && _config.StayOpen)
                     {
                         processInfo.WaitForExit();
+                        _logger.LogInformation("External Program has Exited with code '{Result}'", processInfo.ExitCode);
                     }
                 }
-                Close();
             }
+            Close();
         }
 
         private void _screenKeydown(object sender, KeyEventArgs e)
@@ -152,32 +157,38 @@ namespace PPS
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.StartGame)))
             {
+                _logger.LogInformation("Launch Game Key detected");
                 LaunchGame();
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.Exit)))
             {
+                _logger.LogInformation("Exit Key detected");
                 ExitProgram();
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.OnePlayer)))
             {
+                _logger.LogInformation("1 Player Key detected");
                 _numPlayers = 1;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.TwoPlayers)))
             {
+                _logger.LogInformation("2 Players Key detected");
                 _numPlayers = 2;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.ThreePlayers)))
             {
+                _logger.LogInformation("3 Players Key detected");
                 _numPlayers = 3;
                 RedrawPlayerSelect();
                 LaunchGame();
             }
             else if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.FourPlayers)))
             {
+                _logger.LogInformation("4 Players Key detected");
                 _numPlayers = 4;
                 RedrawPlayerSelect();
                 LaunchGame();

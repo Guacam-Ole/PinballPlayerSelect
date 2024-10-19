@@ -1,6 +1,8 @@
 ﻿using IniParser;
 using IniParser.Model;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using System;
@@ -28,7 +30,13 @@ namespace PPS
         private ConfigValues _configValues;
         private readonly Timer _previewTimer = new() { Interval = 2400 };
         private readonly Random _random = new();
+        private readonly ILogger<Import> _logger;
         private IniData _iniData;
+
+        public Import(ILogger<Import> logger) : this()
+        {
+            _logger = logger;
+        }
 
         public Import()
         {
@@ -72,6 +80,7 @@ namespace PPS
             try
             {
                 ParseIni(Path.Combine(GetIniFilePath(), "PinballX.ini"));
+                _logger.LogInformation("Retrieved Ini-File");
                 Screen.Enabled = true;
                 Overlays.Enabled = true;
                 WriteConfig.Enabled = true;
@@ -82,6 +91,7 @@ namespace PPS
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Sorry, your Silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _logger.LogError(ex, "Cannot read ini");
             }
         }
 
@@ -137,10 +147,7 @@ namespace PPS
                 SectionName = iniContents["Section"],
                 Executable = iniContents["Executable"],
                 WorkingPath = iniContents["WorkingPath"],
-                Media = new Media
-                {
-                    Root = Path.GetDirectoryName(pbxInput.Text)
-                }
+                Media = Path.GetDirectoryName(pbxInput.Text)
             });
         }
 
@@ -351,23 +358,13 @@ namespace PPS
                 SaveIni();
 
                 MessageBox.Show("Everything should work now. A backup has been created");
-
-                //new DisplayText(
-                //    "Done",
-                //    "One final step: You have to modify a few lines in PinballX.INI. Because we don't never ever want to " +
-                //    "mess up your pinballX-Configuration we don't do this automatically. " +
-                //    "Please copy and paste the following lines yourself to the \"[PinballFX3]\" segment into the PinballX.ini:",
-
-                //   $"WorkingPath={AppDomain.CurrentDomain.BaseDirectory}\r\n" +
-                //    "Executable = PPS.exe\r\n" +
-                //    "Parameters =fx3 [TABLEFILE] <existing parameters> \r\n"
-                //    ).ShowDialog();
-
+                _logger.LogInformation("Created Configs");
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Sorry, your silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message, "Sorry, your Silverball got stuck somehow", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _logger.LogError(ex, "Error writing config");
             }
         }
 
@@ -393,7 +390,7 @@ namespace PPS
                 var emulatorIni = _iniData[emulator.SectionName];
                 emulatorIni["WorkingPath"] = AppDomain.CurrentDomain.BaseDirectory;
                 emulatorIni["Executable"] = "PPS.exe";
-                emulatorIni["Parameters"] = $"{emulator.Name} [TABLENAME] {emulatorIni["Parameters"]}";
+                emulatorIni["Parameters"] = $"{emulator.Name} [TABLEFILE] {emulatorIni["Parameters"]}";
             }
             var streamIniParser = new StreamIniDataParser();
             using var memoryStream = new MemoryStream();
