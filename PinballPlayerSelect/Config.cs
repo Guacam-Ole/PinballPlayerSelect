@@ -8,16 +8,9 @@ namespace PPS
     {
         private const string _configFilePath = "config.json";
 
-        private static string AddPaths(string rootPath, string target, string prefix)
+        public static ConfigValues ReadConfig(string file=_configFilePath)
         {
-            if (rootPath == null) return target;
-            if (target != null) return target;
-            return Path.Combine(rootPath, $"{prefix} Images");
-        }
-
-        public static ConfigValues ReadConfig()
-        {
-            var configString = File.ReadAllText(_configFilePath);
+            var configString = File.ReadAllText(file);
             var configuration = JsonConvert.DeserializeObject<ConfigValues>(configString);
             return configuration;
         }

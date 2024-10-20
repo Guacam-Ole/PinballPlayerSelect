@@ -47,7 +47,7 @@
             this.Text = "Launcher";
             this.TransparencyKey = System.Drawing.Color.Red;
             this.Load += new System.EventHandler(this.Launcher_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this._screenKeydown);
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this._screenKeyDown);
             this.ResumeLayout(false);
 
         }

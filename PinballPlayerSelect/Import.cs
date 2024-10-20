@@ -18,20 +18,30 @@ namespace PPS
 {
     public partial class Import : Form
     {
-        private const string _PinballFXSteamId = "2328760";
-        private const string _PinballMSteamId = "2337640";
+        private const string _pinballFXName = "PinballFX";
+        private const string _pinballFX3Name = "PinballFX3";
+        private const string _pinballMName = "PinballM";
+        private const string _pinballFXSteamId = "2328760";
+        private const string _pinballMSteamId = "2337640";
         private const string _tagOverlay = "Overlay";
         private const string _tagScreen = "Screen";
         private const string _fx3Section = "PinballFX3";
         private const string _separator = "|";
+        private const string _iniExecutable = "Executable";
+        private const string _iniParameters = "Parameters";
+        private const string _applicationExe = "PPS.exe";
+        private const string _iniWorkingPath = "WorkingPath";
+        private const string _iniSection = "Section";
         private KeyDataCollection _pinballFx = null;
         private KeyDataCollection _pinballM = null;
         private KeyDataCollection _pinballFx3 = null;
-        private ConfigValues _configValues;
+
         private readonly Timer _previewTimer = new() { Interval = 2400 };
+
         private readonly Random _random = new();
         private readonly ILogger<Import> _logger;
         private IniData _iniData;
+        private ConfigValues _configValues;
 
         public Import(ILogger<Import> logger) : this()
         {
@@ -84,7 +94,7 @@ namespace PPS
                 Screen.Enabled = true;
                 Overlays.Enabled = true;
                 WriteConfig.Enabled = true;
-                SetDefaultOverlay();
+                SetDefaultOverlay(_configValues.Overlays.First(q => q.Filter == null).Prefix);
 
                 _previewTimer.Start();
             }
@@ -95,12 +105,12 @@ namespace PPS
             }
         }
 
-        private static Screen GetScreenFromIni(KeyDataCollection data, string prefix = null)
+        private Screen GetScreenFromIni(KeyDataCollection data, string prefix = null)
         {
             int id = data.IntParse("Monitor");
             if (id + 1 > System.Windows.Forms.Screen.AllScreens.Length)
             {
-                MessageBox.Show($"ScreenId '{id}' does not exist");
+                _logger.LogWarning("ScreenId '{id}' does not exist", id);
                 id = System.Windows.Forms.Screen.AllScreens.Length - 1;
             }
 
@@ -132,97 +142,112 @@ namespace PPS
             return screen.WorkingArea.Width == width && screen.WorkingArea.Height == height;
         }
 
-        private void AddToEmulatorIfConfigExists(List<Emulator> emulators, string emulatorName, KeyDataCollection iniContents)
+        private void AddToEmulatorIfConfigExists(List<Emulator> emulators, string emulatorName, KeyDataCollection iniContents, Emulator defaultConfig)
         {
             if (iniContents == null) return;
-            if (iniContents["Executable"] == "PPS.exe")
-            {
-                MessageBox.Show("Ini has already been modified (I found pps.exe there)");
-                this.Close();
-                return;
-            }
+
             emulators.Add(new Emulator
             {
                 Name = emulatorName,
-                SectionName = iniContents["Section"],
-                Executable = iniContents["Executable"],
-                WorkingPath = iniContents["WorkingPath"],
-                Media = Path.GetDirectoryName(pbxInput.Text)
+                SectionName = iniContents[_iniSection],
+                Executable = iniContents[_iniExecutable],
+                WorkingPath = iniContents[_iniWorkingPath],
+                Media = Path.GetDirectoryName(pbxInput.Text),
+                OnePlayer = defaultConfig.OnePlayer,
+                TwoPlayers = defaultConfig.TwoPlayers,
+                ThreePlayers = defaultConfig.ThreePlayers,
+                FourPlayers = defaultConfig.FourPlayers
             });
         }
 
         private void ParseIni(string filename)
         {
-            var parser = new FileIniDataParser();
-            _iniData = parser.ReadFile(filename);
-
-            if (_iniData.Sections.Any(q => q.SectionName == _fx3Section))
+            bool iniAlreadyUpdated = false;
+            try
             {
-                _pinballFx3 = _iniData[_fx3Section];
-                _pinballFx3["Section"] = _fx3Section;
+                var parser = new FileIniDataParser();
+                _iniData = parser.ReadFile(filename);
+            }
+            catch (Exception ex)
+            {
+                OutputHelper.ShowMessage(_logger, ex, "Error reading INI-File");
+                throw;
             }
 
-            var input = _iniData["KeyCodes"];
-
-            for (int sectionCount = 1; sectionCount < 10; sectionCount++)
+            try
             {
-                string sectionName = $"System_{sectionCount}";
-                var systemSection = _iniData.Sections.FirstOrDefault(q => q.SectionName == sectionName);
-                if (systemSection == null) continue;
-                if (systemSection.Keys.ContainsKey("Parameters"))
+                if (_iniData.Sections.Any(q => q.SectionName == _fx3Section))
                 {
-                    var parameters = _iniData[sectionName]["Parameters"];
-                    if (parameters.Contains(_PinballFXSteamId))
+                    _pinballFx3 = _iniData[_fx3Section];
+                    _pinballFx3[_iniSection] = _fx3Section;
+                    if (_pinballFx3[_iniExecutable].Contains(_applicationExe)) iniAlreadyUpdated = true;
+                }
+
+                var input = _iniData["KeyCodes"];
+
+                for (int sectionCount = 1; sectionCount < 10; sectionCount++)
+                {
+                    string sectionName = $"System_{sectionCount}";
+                    var systemSection = _iniData.Sections.FirstOrDefault(q => q.SectionName == sectionName);
+                    if (systemSection == null) continue;
+                    if (systemSection.Keys.ContainsKey(_iniParameters) && systemSection.Keys.ContainsKey(_iniExecutable))
                     {
-                        _pinballFx = _iniData[sectionName];
-                        _pinballFx["Section"] = sectionName;
-                    }
-                    if (parameters.Contains(_PinballMSteamId))
-                    {
-                        _pinballM = _iniData[sectionName];
-                        _pinballM["Section"] = sectionName;
+                        if (_iniData[sectionName][_iniExecutable].Contains(_applicationExe)) iniAlreadyUpdated = true;
+
+                        var parameters = _iniData[sectionName][_iniParameters];
+                        parameters = parameters.Replace("Classic", string.Empty); // Remove "Classic" as this is OnePlayer-Config
+                        if (!parameters.Contains("-GameMode", StringComparison.OrdinalIgnoreCase)) parameters = parameters.Trim() + " -GameMode";
+
+                        if (parameters.Contains(_pinballFXSteamId))
+                        {
+                            _pinballFx = _iniData[sectionName];
+                            _pinballFx[_iniSection] = sectionName;
+                            _iniData[sectionName][_iniParameters] = parameters;
+                        }
+                        if (parameters.Contains(_pinballMSteamId))
+                        {
+                            _pinballM = _iniData[sectionName];
+                            _pinballM[_iniSection] = sectionName;
+                            _iniData[sectionName][_iniParameters] = parameters;
+                        }
                     }
                 }
-            }
 
-            var emulators = new List<Emulator>();
-            AddToEmulatorIfConfigExists(emulators, "PinballFX3", _pinballFx3);
-            AddToEmulatorIfConfigExists(emulators, "PinballFX", _pinballFx);
-            AddToEmulatorIfConfigExists(emulators, "PinballM", _pinballM);
-
-            _configValues = new ConfigValues()
-            {
-                BatchMode = false,
-                StayOpen = false,
-                Emulators = emulators,
-                Input = new Input
+                if (iniAlreadyUpdated)
                 {
-                    Exit = input.IntParse("quit"),
-                    MorePlayers = input.IntParse("right"),
-                    LessPlayers = input.IntParse("left"),
-                    StartGame = input.IntParse("select"),
-                    Loop = true,
-                    PlayerCountAtStart = 1
-                },
-            };
+                    OutputHelper.ShowMessage(_logger, "INI-File has already been updated before. No need to reconfigure");
+                    this.Close();
+                }
 
-            SetScreenPropertiesFromIni(_iniData, "DMD");
+                _configValues = Config.ReadConfig("import.config.json");
+                var emulators = new List<Emulator>();
+                AddToEmulatorIfConfigExists(emulators, _pinballFX3Name, _pinballFx3, _configValues.Emulators.First(q => q.Name == _pinballFX3Name));
+                AddToEmulatorIfConfigExists(emulators, _pinballFXName, _pinballFx, _configValues.Emulators.First(q => q.Name == _pinballFXName));
+                AddToEmulatorIfConfigExists(emulators, _pinballMName, _pinballM, _configValues.Emulators.First(q => q.Name == _pinballMName));
+                _configValues.Emulators = emulators;
+                SetScreenPropertiesFromIni(_iniData, "DMD");
+            }
+            catch (Exception ex)
+            {
+                OutputHelper.ShowMessage(_logger, ex, "Cannot Parse Ini-File");
+                throw;
+            }
         }
 
-        private void SetDefaultOverlay()
+        private void SetDefaultOverlay(string overlayStyle)
         {
             var dmd = GetOverlayGroup("DMD");
             var combo = dmd.Controls.OfType<ComboBox>().First(q => q.Tag.Equals("OverlayStyle"));
             var items = (List<KeyValuePair<string, string>>)combo.DataSource;
-            combo.SelectedValue = items.First(q => q.Value == "indyhands").Key;
+            combo.SelectedValue = items.First(q => q.Value == overlayStyle).Key;
         }
 
         private static Dictionary<string, Control> GetGroupControls(GroupBox parent, params string[] controlNames)
         {
             var uiControls = new List<KeyValuePair<string, Control>>();
-            foreach (var controlname in controlNames)
+            foreach (var controlName in controlNames)
             {
-                uiControls.Add(GetSingleControlByTag(parent, controlname));
+                uiControls.Add(GetSingleControlByTag(parent, controlName));
             }
 
             return uiControls.ToDictionary(q => q.Key, q => q.Value);
@@ -348,7 +373,7 @@ namespace PPS
         {
             try
             {
-                if (MessageBox.Show("Warning! Your configfile (config.json) and the PinballX.Ini will be overwritten. Make sure you have a backup. Continue?", "Writing Config", MessageBoxButtons.YesNo) != DialogResult.Yes)
+                if (MessageBox.Show("Warning! Your configFile (config.json) and the PinballX.Ini will be overwritten. (Backups will be created). Continue?", "Writing Config", MessageBoxButtons.YesNo) != DialogResult.Yes)
                 {
                     return;
                 }
@@ -371,7 +396,8 @@ namespace PPS
         private void FinishConfig()
         {
             _configValues.Dmd = GetScreenConfigFromUi("DMD");
-            _configValues.Overlays = [GetOverlayConfigFromUi("DMD")];
+            _configValues.Overlays.RemoveAll(q => q.Filter == null);
+            _configValues.Overlays.Add(GetOverlayConfigFromUi("DMD"));
         }
 
         private void SaveConfig()
@@ -388,9 +414,9 @@ namespace PPS
             foreach (var emulator in _configValues.Emulators)
             {
                 var emulatorIni = _iniData[emulator.SectionName];
-                emulatorIni["WorkingPath"] = AppDomain.CurrentDomain.BaseDirectory;
-                emulatorIni["Executable"] = "PPS.exe";
-                emulatorIni["Parameters"] = $"{emulator.Name} [TABLEFILE] {emulatorIni["Parameters"]}";
+                emulatorIni[_iniWorkingPath] = AppDomain.CurrentDomain.BaseDirectory;
+                emulatorIni[_iniExecutable] = _applicationExe;
+                emulatorIni[_iniParameters] = $"{emulator.Name} [TABLEFILE] {emulatorIni[_iniParameters]}";
             }
             var streamIniParser = new StreamIniDataParser();
             using var memoryStream = new MemoryStream();

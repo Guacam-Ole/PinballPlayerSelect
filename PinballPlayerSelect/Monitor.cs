@@ -13,12 +13,12 @@ namespace PPS
         private string _tableName;
         private string _imagePath;
         private int _numberOfPlayers;
-        private readonly Backgrounds _background;
 
         public event EventHandler<KeyEventArgs> KeyPressed;
 
         private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
         private readonly ILogger<Monitor> _logger;
+        private readonly Background _backgrounds;
         private const UInt32 SWP_NOSIZE = 0x0001;
         private const UInt32 SWP_NOMOVE = 0x0002;
         private const UInt32 TOPMOST_FLAGS = SWP_NOMOVE | SWP_NOSIZE;
@@ -27,16 +27,16 @@ namespace PPS
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
-        public Monitor(ILogger<Monitor> logger) : this()
+        public Monitor(ILogger<Monitor> logger, Background backgrounds) : this()
         {
             _logger = logger;
+            _backgrounds = backgrounds;
         }
 
         public Monitor()
         {
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
-            _background = new Backgrounds();
         }
 
         private void OnTop()
@@ -57,14 +57,14 @@ namespace PPS
         private void Monitor_Load(object sender, EventArgs e)
         {
             if (_screenSettings.OnTop) OnTop();
-            _background.PaintBackgroundImage(this, _screenSettings, _imagePath, _tableName);
+            _backgrounds.PaintBackgroundImage(this, _screenSettings, _imagePath, _tableName);
             RedrawSelection(_numberOfPlayers);
             if (_tableName == "test") TestMode();
         }
 
         private void TestMode()
         {
-            _logger.LogInformation("Working in Testmode");
+            _logger.LogInformation("Working in TestMode");
             this.FormBorderStyle = FormBorderStyle.SizableToolWindow;
             coordsInfo.Visible = true;
             PlayerNum.Visible = false;
@@ -85,12 +85,12 @@ namespace PPS
                 counter++;
             }
             coordsInfo.Text = txt;
-            _logger.LogInformation("Coordinates:" + txt);
+            _logger.LogInformation("Coordinates: '{txt}'", txt);
         }
 
         public void RedrawSelection(int numberOfPlayers)
         {
-            _background.DisplaySelection(this, _screenSettings, _overlaySettings, numberOfPlayers);
+            _backgrounds.DisplaySelection(this, _screenSettings, _overlaySettings, numberOfPlayers);
             _logger.LogInformation("Redrawn PlayerSelect with '{Count}' players", numberOfPlayers);
         }
 

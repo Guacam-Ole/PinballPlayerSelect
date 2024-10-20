@@ -20,7 +20,7 @@ namespace PPS
 
         private Overlay _overlay;
         private string _gameParameters;
-        private Monitor _dmd;
+        private readonly Monitor _dmd;
         private int _numPlayers;
         private readonly ILogger<Launcher> _logger;
 
@@ -53,7 +53,7 @@ namespace PPS
 
         private void DrawDmd(string tableName)
         {
-            _dmd.KeyPressed += _screenKeydown;
+            _dmd.KeyPressed += _screenKeyDown;
             _dmd.ShowPlayerSelection(_config.Dmd, _overlay, tableName, _emulator.Media, _numPlayers);
         }
 
@@ -101,7 +101,7 @@ namespace PPS
             _logger.LogInformation("Launching '{Game}' with parameters '{Parameters}'", target, parameters);
             if (RunInTestMode)
             {
-                OutputHelper.ShowMessage($"[TEST] The following Command would be run: {target} {parameters}");
+                OutputHelper.ShowMessage(_logger, $"[TEST] The following Command would be run: '{target} {parameters}'");
             }
             else
             {
@@ -129,7 +129,7 @@ namespace PPS
             Close();
         }
 
-        private void _screenKeydown(object sender, KeyEventArgs e)
+        private void _screenKeyDown(object sender, KeyEventArgs e)
         {
             if (Convert.ToBoolean(GetAsyncKeyState((Keys)_config.Input.MorePlayers)))
             {

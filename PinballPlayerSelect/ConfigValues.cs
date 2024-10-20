@@ -4,7 +4,7 @@ namespace PPS
 {
     public class ConfigValues
     {
-        public Screen Dmd{ get; set; }
+        public Screen Dmd { get; set; }
         public Input Input { get; set; }
         public List<Emulator> Emulators { get; set; }
         public List<Overlay> Overlays { get; set; }
@@ -19,8 +19,8 @@ namespace PPS
         public int MorePlayers { get; set; }
         public int LessPlayers { get; set; }
         public bool Loop { get; set; } = true;
-        public int OnePlayer { get; set; }  
-        public int TwoPlayers { get; set; } 
+        public int OnePlayer { get; set; }
+        public int TwoPlayers { get; set; }
         public int ThreePlayers { get; set; }
         public int FourPlayers { get; set; }
         public int PlayerCountAtStart { get; set; } = 1;
@@ -41,7 +41,7 @@ namespace PPS
 
     public class Overlay
     {
-        public string Filter { get; set; }
+        public string? Filter { get; set; } = null;
         public string Prefix { get; set; }
         public int Width { get; set; } = 100;
         public int Height { get; set; } = 100;

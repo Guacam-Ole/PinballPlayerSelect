@@ -10,18 +10,9 @@ using System.Windows.Forms;
 
 namespace PPS
 {
-    public class Backgrounds
+    public class Background(ILogger<Background> logger)
     {
-        private readonly ILogger<Backgrounds> _logger;
-
-        public Backgrounds(ILogger<Backgrounds> logger) : this()
-        {
-            _logger = logger;
-        }
-
-        public Backgrounds()
-        {
-        }
+        private readonly ILogger<Background> _logger = logger;
 
         private static void RotateImage(ref Image image, int degrees)
         {
@@ -41,7 +32,7 @@ namespace PPS
             }
         }
 
-        public void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tablename)
+        public void PaintBackgroundImage(Form form, Screen screen, string imagePath, string tableName)
         {
             if (System.Windows.Forms.Screen.AllScreens.Length < screen.Id + 1)
             {
@@ -71,7 +62,7 @@ namespace PPS
                     return;
                 }
 
-                var matches = Directory.GetFiles(imagePath, $"{tablename}.*");
+                var matches = Directory.GetFiles(imagePath, $"{tableName}.*");
                 string imageFileName;
                 if (matches.Length != 0)
                 {
@@ -116,7 +107,7 @@ namespace PPS
             return destinationImage;
         }
 
-        public void DisplaySelection(Form form, Screen screensettings, Overlay overlaySettings, int currentNumberOfPlayers = 1)
+        public void DisplaySelection(Form form, Screen screenSettings, Overlay overlaySettings, int currentNumberOfPlayers = 1)
         {
             if (overlaySettings?.Prefix == null)
             {
@@ -135,9 +126,9 @@ namespace PPS
 
             var selectionImage = Image.FromFile(fileMatches.First());
             var resizedImage = Resize(selectionImage, overlaySettings.Width * form.Width / 100, overlaySettings.Height * form.Height / 100);
-            if (screensettings.OverlayRotate != 0)
+            if (screenSettings.OverlayRotate != 0)
             {
-                RotateImage(ref resizedImage, screensettings.OverlayRotate);
+                RotateImage(ref resizedImage, screenSettings.OverlayRotate);
             }
 
             player.Image = resizedImage;
